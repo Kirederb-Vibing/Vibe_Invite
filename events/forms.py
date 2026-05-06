@@ -29,7 +29,8 @@ class EventForm(forms.ModelForm):
                   'tema', 'baggrundsbillede', 'oenskeliste_url',
                   'farve_baggrund', 'farve_moenster',
                   'reminder_dage_foer', 'reminder_interval',
-                  'kommentarer_aktiveret', 'afstemning_aktiveret')
+                  'kommentarer_aktiveret', 'afstemning_aktiveret',
+                  'vis_deltagerliste')
         widgets = {
             'dato': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}, format='%Y-%m-%dT%H:%M'),
             'sidste_svardag': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}, format='%Y-%m-%dT%H:%M'),

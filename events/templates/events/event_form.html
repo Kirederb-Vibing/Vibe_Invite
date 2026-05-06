@@ -17,7 +17,7 @@
                     <h2 class="mb-3">{{ titel }}</h2>
 
                     {% for field in form %}
-                        {% if field.html_name not in 'tema,baggrundsbillede,oenskeliste_url,farve_baggrund,farve_moenster,reminder_dage_foer,reminder_interval,kommentarer_aktiveret,afstemning_aktiveret' %}
+                        {% if field.html_name not in 'tema,baggrundsbillede,oenskeliste_url,farve_baggrund,farve_moenster,reminder_dage_foer,reminder_interval,kommentarer_aktiveret,afstemning_aktiveret,vis_deltagerliste' %}
                         <div class="mb-3">
                             <label class="form-label">{{ field.label }}</label>
                             {{ field }}
@@ -138,6 +138,16 @@
                             <label class="form-check-label" for="{{ form.afstemning_aktiveret.id_for_label }}">
                                 <span class="fw-semibold">{% trans "Afstemning" %}</span>
                                 <span class="text-muted fw-normal"> — {% trans "gæster kan stemme på spørgsmål du opretter" %}</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            {{ form.vis_deltagerliste }}
+                            <label class="form-check-label" for="{{ form.vis_deltagerliste.id_for_label }}">
+                                <span class="fw-semibold">{% trans "Vis deltagerliste" %}</span>
+                                <span class="text-muted fw-normal"> — {% trans "gæster kan se hvem der ellers har sagt ja" %}</span>
                             </label>
                         </div>
                     </div>

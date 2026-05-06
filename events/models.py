@@ -109,6 +109,11 @@ class Event(models.Model):
         verbose_name=_('Afstemning aktiveret'),
         help_text=_('Gæster kan stemme på afstemninger på RSVP-siden.')
     )
+    vis_deltagerliste = models.BooleanField(
+        default=True,
+        verbose_name=_('Vis deltagerliste for gæster'),
+        help_text=_('Gæster kan se hvem der ellers har sagt ja.')
+    )
     aflyst = models.BooleanField(default=False, verbose_name=_('Aflyst'))
     aflysning_besked = models.TextField(
         blank=True,

@@ -815,7 +815,7 @@ def rsvp_oversigt(request, token):
                     'frist_passeret': frist_passeret,
                     'kan_aendre_til': kan_aendre_til,
                     'afbud_form': form,
-                    'andre_ja': _andre_deltagere(event, ekskluder_email=invitation.email),
+                    'andre_ja': _andre_deltagere(event, ekskluder_email=invitation.email) if event.vis_deltagerliste else [],
                     'event': event,
                     **_rsvp_kontekst(event, request),
                 })
@@ -830,7 +830,7 @@ def rsvp_oversigt(request, token):
             'frist_passeret': frist_passeret,
             'kan_aendre_til': kan_aendre_til,
             'afbud_form': AfbudEfterFristForm(),
-            'andre_ja': _andre_deltagere(event, ekskluder_email=invitation.email),
+            'andre_ja': _andre_deltagere(event, ekskluder_email=invitation.email) if event.vis_deltagerliste else [],
             'event': event,
             'kommentarer': event.kommentarer.all(),
             'kommentar_form': KommentarForm(),
@@ -897,7 +897,7 @@ def rsvp_oversigt(request, token):
             'kan_aendre_til': kan_aendre_til,
             'kan_aendre_medlem': kan_aendre_medlem,
             'afbud_form': AfbudEfterFristForm() if frist_passeret and husstand.status == 'ja' else None,
-            'andre_ja': _andre_deltagere(event),
+            'andre_ja': _andre_deltagere(event) if event.vis_deltagerliste else [],
             'event': event,
             'er_solo': er_solo,
             'solo_navn': solo_navn,
@@ -913,7 +913,7 @@ def rsvp_bekræftet(request, token):
     invitation = Invitation.objects.filter(token=token).first()
     if invitation:
         event = invitation.event
-        andre_ja = _andre_deltagere(event, ekskluder_email=invitation.email) if invitation.status == 'ja' else []
+        andre_ja = _andre_deltagere(event, ekskluder_email=invitation.email) if invitation.status == 'ja' and event.vis_deltagerliste else []
         return render(request, 'events/bekræftet.html', {
             'invitation': invitation,
             'andre_ja': andre_ja,
@@ -923,7 +923,7 @@ def rsvp_bekræftet(request, token):
     husstand = Husstand.objects.filter(token=token).first()
     if husstand:
         event = husstand.event
-        andre_ja = _andre_deltagere(event) if husstand.status == 'ja' else []
+        andre_ja = _andre_deltagere(event) if husstand.status == 'ja' and event.vis_deltagerliste else []
         return render(request, 'events/bekræftet.html', {
             'husstand': husstand,
             'andre_ja': andre_ja,
