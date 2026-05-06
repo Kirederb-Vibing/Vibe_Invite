@@ -106,9 +106,16 @@ body {
             <span class="badge bg-success">{% trans "Ja" %}</span>
         </div>
         {% if not deltager.husstand %}
-        <form method="post" action="{% url 'deltager_rediger' event.slug deltager.token %}" class="d-inline">
-            {% csrf_token %}<button name="slet" class="btn btn-sm btn-outline-danger py-0 px-1" onclick="return confirm('{% blocktrans with navn=deltager.navn %}Fjern {{ navn }}?{% endblocktrans %}')">×</button>
-        </form>
+        <div class="d-flex gap-1">
+            {% if deltager.email %}
+            <form method="post" action="{% url 'gensend_invitation_solo' event.slug deltager.token %}" class="d-inline">
+                {% csrf_token %}<button class="btn btn-sm btn-outline-primary py-0 px-1" title="{% trans 'Gensend invitation' %}">✉</button>
+            </form>
+            {% endif %}
+            <form method="post" action="{% url 'deltager_rediger' event.slug deltager.token %}" class="d-inline">
+                {% csrf_token %}<button name="slet" class="btn btn-sm btn-outline-danger py-0 px-1" onclick="return confirm('{% blocktrans with navn=deltager.navn %}Fjern {{ navn }}?{% endblocktrans %}')">×</button>
+            </form>
+        </div>
         {% endif %}
     </li>
     {% empty %}
@@ -129,9 +136,16 @@ body {
             <span class="badge bg-warning">{% trans "Måske" %}</span>
         </div>
         {% if not deltager.husstand %}
-        <form method="post" action="{% url 'deltager_rediger' event.slug deltager.token %}" class="d-inline">
-            {% csrf_token %}<button name="slet" class="btn btn-sm btn-outline-danger py-0 px-1" onclick="return confirm('{% blocktrans with navn=deltager.navn %}Fjern {{ navn }}?{% endblocktrans %}')">×</button>
-        </form>
+        <div class="d-flex gap-1">
+            {% if deltager.email %}
+            <form method="post" action="{% url 'gensend_invitation_solo' event.slug deltager.token %}" class="d-inline">
+                {% csrf_token %}<button class="btn btn-sm btn-outline-primary py-0 px-1" title="{% trans 'Gensend invitation' %}">✉</button>
+            </form>
+            {% endif %}
+            <form method="post" action="{% url 'deltager_rediger' event.slug deltager.token %}" class="d-inline">
+                {% csrf_token %}<button name="slet" class="btn btn-sm btn-outline-danger py-0 px-1" onclick="return confirm('{% blocktrans with navn=deltager.navn %}Fjern {{ navn }}?{% endblocktrans %}')">×</button>
+            </form>
+        </div>
         {% endif %}
     </li>
     {% empty %}
@@ -155,9 +169,16 @@ body {
             <span class="badge bg-danger">{% trans "Nej" %}</span>
         </div>
         {% if not deltager.husstand %}
-        <form method="post" action="{% url 'deltager_rediger' event.slug deltager.token %}" class="d-inline">
-            {% csrf_token %}<button name="slet" class="btn btn-sm btn-outline-danger py-0 px-1" onclick="return confirm('{% blocktrans with navn=deltager.navn %}Fjern {{ navn }}?{% endblocktrans %}')">×</button>
-        </form>
+        <div class="d-flex gap-1">
+            {% if deltager.email %}
+            <form method="post" action="{% url 'gensend_invitation_solo' event.slug deltager.token %}" class="d-inline">
+                {% csrf_token %}<button class="btn btn-sm btn-outline-primary py-0 px-1" title="{% trans 'Gensend invitation' %}">✉</button>
+            </form>
+            {% endif %}
+            <form method="post" action="{% url 'deltager_rediger' event.slug deltager.token %}" class="d-inline">
+                {% csrf_token %}<button name="slet" class="btn btn-sm btn-outline-danger py-0 px-1" onclick="return confirm('{% blocktrans with navn=deltager.navn %}Fjern {{ navn }}?{% endblocktrans %}')">×</button>
+            </form>
+        </div>
         {% endif %}
     </li>
     {% empty %}
@@ -178,9 +199,16 @@ body {
             <span class="badge bg-secondary">{% trans "Afventer" %}</span>
         </div>
         {% if not deltager.husstand %}
-        <form method="post" action="{% url 'deltager_rediger' event.slug deltager.token %}" class="d-inline">
-            {% csrf_token %}<button name="slet" class="btn btn-sm btn-outline-danger py-0 px-1" onclick="return confirm('{% blocktrans with navn=deltager.navn %}Fjern {{ navn }}?{% endblocktrans %}')">×</button>
-        </form>
+        <div class="d-flex gap-1">
+            {% if deltager.email %}
+            <form method="post" action="{% url 'gensend_invitation_solo' event.slug deltager.token %}" class="d-inline">
+                {% csrf_token %}<button class="btn btn-sm btn-outline-primary py-0 px-1" title="{% trans 'Gensend invitation' %}">✉</button>
+            </form>
+            {% endif %}
+            <form method="post" action="{% url 'deltager_rediger' event.slug deltager.token %}" class="d-inline">
+                {% csrf_token %}<button name="slet" class="btn btn-sm btn-outline-danger py-0 px-1" onclick="return confirm('{% blocktrans with navn=deltager.navn %}Fjern {{ navn }}?{% endblocktrans %}')">×</button>
+            </form>
+        </div>
         {% endif %}
     </li>
     {% empty %}
@@ -223,6 +251,9 @@ body {
             </div>
             <div class="d-flex gap-2">
                 <a href="{% url 'husstand_rediger' event.slug h.token %}" class="btn btn-sm btn-outline-secondary">{% trans "Rediger" %}</a>
+                <form method="post" action="{% url 'gensend_invitation_husstand' event.slug h.token %}" class="d-inline">
+                    {% csrf_token %}<button class="btn btn-sm btn-outline-primary">✉ {% trans "Gensend" %}</button>
+                </form>
                 <form method="post" action="{% url 'husstand_slet' event.slug h.token %}" class="d-inline">
                     {% csrf_token %}<button class="btn btn-sm btn-outline-danger" onclick="return confirm('{% blocktrans with navn=h.navn %}Fjern husstanden {{ navn }}?{% endblocktrans %}')">{% trans "Fjern" %}</button>
                 </form>

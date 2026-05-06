@@ -1179,6 +1179,83 @@ def send_invitationer(request, slug):
     messages.success(request, _('Sendte %(inv)d invitationer + %(husstand)d husstandsmedlemmer.') % {'inv': sendte_invitationer, 'husstand': sendte_husstandsmedlemmer})
     return redirect('event_overblik', slug=slug)
 
+
+@login_required
+def gensend_invitation_solo(request, slug, token):
+    """Gensend invitation til en enkelt solo-deltager."""
+    if request.method != 'POST':
+        return HttpResponseForbidden()
+    event = get_object_or_404(Event, slug=slug)
+    if not event.kan_ses_af(request.user):
+        return HttpResponseForbidden()
+    inv = get_object_or_404(Invitation, token=token, event=event)
+    if not inv.email:
+        messages.warning(request, _('%(navn)s har ingen email-adresse.') % {'navn': inv.navn})
+        return redirect('event_overblik', slug=slug)
+    ics_content = _generer_ics(event)
+    _send_html_mail(
+        subject=f'Du er inviteret til {event.titel}',
+        to=inv.email,
+        template_prefix='invitation_solo',
+        context={
+            'navn': inv.navn,
+            'event': event,
+            'rsvp_url': request.build_absolute_uri(f'/rsvp/{inv.token}/'),
+        },
+        attachment=(f'{event.slug}.ics', ics_content, 'text/calendar'),
+    )
+    messages.success(request, _('Invitation gensendt til %(navn)s.') % {'navn': inv.navn})
+    return redirect('event_overblik', slug=slug)
+
+
+@login_required
+def gensend_invitation_husstand(request, slug, token):
+    """Gensend invitation til alle medlemmer af en husstand."""
+    if request.method != 'POST':
+        return HttpResponseForbidden()
+    event = get_object_or_404(Event, slug=slug)
+    if not event.kan_ses_af(request.user):
+        return HttpResponseForbidden()
+    husstand = get_object_or_404(Husstand, token=token, event=event)
+    ics_content = _generer_ics(event)
+    sendt = 0
+    er_solo = husstand.medlemmer.count() == 1
+    for medlem in husstand.medlemmer.all():
+        if not (medlem.email and medlem.email.strip()):
+            continue
+        if er_solo:
+            _send_html_mail(
+                subject=f'Du er inviteret til {event.titel}',
+                to=medlem.email,
+                template_prefix='invitation_solo',
+                context={
+                    'navn': medlem.navn,
+                    'event': event,
+                    'rsvp_url': request.build_absolute_uri(f'/rsvp/{husstand.token}/'),
+                },
+                attachment=(f'{event.slug}.ics', ics_content, 'text/calendar'),
+            )
+        else:
+            _send_html_mail(
+                subject=f'Du er inviteret til {event.titel}',
+                to=medlem.email,
+                template_prefix='invitation_husstand',
+                context={
+                    'navn': medlem.navn,
+                    'husstand_navn': husstand.navn,
+                    'event': event,
+                    'rsvp_url': request.build_absolute_uri(f'/rsvp/{husstand.token}/'),
+                },
+                attachment=(f'{event.slug}.ics', ics_content, 'text/calendar'),
+            )
+        sendt += 1
+    if sendt:
+        messages.success(request, _('Invitation gensendt til %(navn)s (%(n)d email).') % {'navn': husstand.navn, 'n': sendt})
+    else:
+        messages.warning(request, _('Ingen medlemmer af %(navn)s har en email-adresse.') % {'navn': husstand.navn})
+    return redirect('event_overblik', slug=slug)
+
+
 # ---------- INTERNE HJÆLPEFUNKTIONER ----------
 def _send_afbud_mail_til_arrangør(invitation):
     event = invitation.event

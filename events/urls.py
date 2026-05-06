@@ -33,6 +33,8 @@ urlpatterns = [
     # Event overblik + send
     path('event/<slug:slug>/', views.event_overblik, name='event_overblik'),
     path('event/<slug:slug>/send/', views.send_invitationer, name='send_invitationer'),
+    path('event/<slug:slug>/gensend/<slug:token>/', views.gensend_invitation_solo, name='gensend_invitation_solo'),
+    path('event/<slug:slug>/gensend-husstand/<slug:token>/', views.gensend_invitation_husstand, name='gensend_invitation_husstand'),
     path('event/<slug:slug>/aflys/', views.event_aflys, name='event_aflys'),
     path('event/<slug:slug>/arkiver/', views.event_arkiver, name='event_arkiver'),
     path('event/<slug:slug>/kalender.ics', views.event_ics, name='event_ics'),
