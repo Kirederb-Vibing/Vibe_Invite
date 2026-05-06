@@ -40,4 +40,24 @@
     </div>
 </div>
 {% endif %}
+
+<p class="text-muted text-center small mt-3">
+    {% trans "Du sendes videre om" %} <span id="countdown">5</span> {% trans "sekunder" %}…
+</p>
+
+<script>
+(function() {
+    var sek = 5;
+    var el = document.getElementById('countdown');
+    var url = "{% if invitation %}{% url 'rsvp_oversigt' invitation.token %}{% elif husstand %}{% url 'rsvp_oversigt' husstand.token %}{% endif %}";
+    var timer = setInterval(function() {
+        sek--;
+        el.textContent = sek;
+        if (sek <= 0) {
+            clearInterval(timer);
+            window.location.href = url;
+        }
+    }, 1000);
+})();
+</script>
 {% endblock %}
