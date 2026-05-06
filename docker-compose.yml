@@ -1,0 +1,106 @@
+# Vibe Invite — single compose file
+#
+# Default (external proxy, port 8000):
+#   docker compose up -d
+#
+# With built-in Caddy (auto-SSL, recommended for most):
+#   docker compose --profile caddy up -d
+#
+# With Pangolin newt agent bundled:
+#   docker compose --profile pangolin up -d
+#
+# Or use the convenience targets in the Makefile — run: make help
+
+services:
+
+  vibe_invite_db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-vibe_invite}
+      POSTGRES_USER: ${DB_USER:-vibe_invite}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-vibe_invite}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  vibe_invite_web:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      vibe_invite_db:
+        condition: service_healthy
+    volumes:
+      - media:/app/media
+      - staticfiles:/app/staticfiles
+      - logs:/app/logs
+    ports:
+      - "8000:8000"
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             gunicorn core.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 60"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz/')\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  vibe_invite_worker:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      vibe_invite_db:
+        condition: service_healthy
+    command: python manage.py qcluster
+
+  # ── Caddy profile — auto-SSL via Let's Encrypt ───────────────────────────────
+  # Activate with: docker compose --profile caddy up -d   OR   make start-caddy
+  # Requires DOMAIN and ACME_EMAIL in .env
+  caddy:
+    profiles: [caddy]
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"   # HTTP/3
+    env_file: .env
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+      - staticfiles:/srv/staticfiles:ro
+      - media:/srv/media:ro
+    depends_on:
+      vibe_invite_web:
+        condition: service_healthy
+
+  # ── Pangolin profile — newt tunnel agent bundled ─────────────────────────────
+  # Use this ONLY if newt is NOT already running as a system service.
+  # Activate with: docker compose --profile pangolin up -d   OR   make start-pangolin
+  # Requires PANGOLIN_ENDPOINT, PANGOLIN_SITE_ID, PANGOLIN_SITE_SECRET in .env
+  newt:
+    profiles: [pangolin]
+    image: fosrl/newt
+    restart: unless-stopped
+    depends_on:
+      - vibe_invite_web
+    environment:
+      - PANGOLIN_ENDPOINT=${PANGOLIN_ENDPOINT}
+      - PANGOLIN_SITE_ID=${PANGOLIN_SITE_ID}
+      - PANGOLIN_SITE_SECRET=${PANGOLIN_SITE_SECRET}
+
+volumes:
+  postgres_data:
+  media:
+  staticfiles:
+  logs:
+  caddy_data:
+  caddy_config:

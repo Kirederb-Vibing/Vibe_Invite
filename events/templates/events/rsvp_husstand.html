@@ -1,0 +1,44 @@
+{% extends 'events/rsvp_base.html' %}
+{% load i18n %}
+{% block title %}{{ event.titel }} – RSVP{% endblock %}
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body p-4">
+        {% if er_solo %}
+        <p class="mb-3">{% blocktrans with navn=solo_navn %}Hej <strong>{{ navn }}</strong>, deltager du?{% endblocktrans %}</p>
+        <form method="post" action="{% url 'rsvp' husstand.token %}">
+            {% csrf_token %}
+            <div class="d-grid gap-2">
+                <button type="submit" name="husstand_status" value="ja" class="btn btn-success btn-lg">✅ {% trans "Ja, jeg kommer" %}</button>
+                <button type="submit" name="husstand_status" value="maaske" class="btn btn-warning btn-lg">🤔 {% trans "Måske" %}</button>
+                <button type="submit" name="husstand_status" value="nej" class="btn btn-danger btn-lg">❌ {% trans "Nej, jeg kan ikke" %}</button>
+            </div>
+        </form>
+        {% else %}
+        <p class="mb-3">{% blocktrans with navn=husstand.navn %}Hej <strong>{{ navn }}</strong>, deltager I?{% endblocktrans %}</p>
+        <form method="post" action="{% url 'rsvp' husstand.token %}">
+            {% csrf_token %}
+            <div class="d-grid gap-2 mb-4">
+                <button type="submit" name="husstand_status" value="ja" class="btn btn-success btn-lg">✅ {% trans "Ja, vi kommer alle" %}</button>
+                <button type="submit" name="husstand_status" value="maaske" class="btn btn-warning btn-lg">🤔 {% trans "Måske" %}</button>
+                <button type="submit" name="husstand_status" value="nej" class="btn btn-danger btn-lg">❌ {% trans "Nej, vi kommer ikke" %}</button>
+            </div>
+            <hr>
+            <h5>{% trans "Eller vælg individuelt:" %}</h5>
+            <div class="mb-3">
+                {% for medlem in medlemmer %}
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" name="medlem_{{ medlem.id }}" id="medlem_{{ medlem.id }}"
+                           {% if medlem.status == 'ja' %}checked{% endif %}>
+                    <label class="form-check-label" for="medlem_{{ medlem.id }}">
+                        {{ medlem.navn }}{% if medlem.email %} <small class="text-muted">{{ medlem.email }}</small>{% endif %}
+                    </label>
+                </div>
+                {% endfor %}
+            </div>
+            <button type="submit" name="bekraeft_individuelt" class="btn btn-primary w-100">{% trans "Bekræft individuelle svar" %}</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

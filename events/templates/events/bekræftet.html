@@ -1,0 +1,43 @@
+{% extends 'events/rsvp_base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Tak for dit svar" %}{% endblock %}
+{% block content %}
+<div class="card shadow-sm text-center mb-3">
+    <div class="card-body p-4">
+        {% if invitation %}
+            {% if invitation.status == 'ja' %}
+                <h2>🥳 {% blocktrans with titel=event.titel %}Vi ses til {{ titel }}!{% endblocktrans %}</h2>
+            {% elif invitation.status == 'maaske' %}
+                <h2>{% trans "Tak for dit svar!" %}</h2>
+                <p class="text-muted">{% trans "Vi håber du kan alligevel." %}</p>
+            {% else %}
+                <h2>{% trans "Det er synd du ikke kan!" %}</h2>
+                <p class="text-muted">{% trans "Vi håber at se dig næste gang." %}</p>
+            {% endif %}
+            <a href="{% url 'rsvp_oversigt' invitation.token %}" class="btn btn-outline-primary mt-2">{% trans "Se eller ændre mit svar" %}</a>
+        {% elif husstand %}
+            {% if husstand.status == 'ja' %}
+                <h2>🥳 {% blocktrans with titel=event.titel %}Vi ses til {{ titel }}!{% endblocktrans %}</h2>
+            {% elif husstand.status == 'maaske' %}
+                <h2>{% trans "Tak for jeres svar!" %}</h2>
+                <p class="text-muted">{% trans "Vi håber I kan alligevel." %}</p>
+            {% elif husstand.status == 'nej' %}
+                <h2>{% trans "Det er synd I ikke kan!" %}</h2>
+                <p class="text-muted">{% trans "Vi håber at se jer næste gang." %}</p>
+            {% else %}
+                <h2>{% trans "Tak for jeres individuelle svar!" %}</h2>
+            {% endif %}
+            <a href="{% url 'rsvp_oversigt' husstand.token %}" class="btn btn-outline-primary mt-2">{% trans "Se eller ændre jeres svar" %}</a>
+        {% endif %}
+    </div>
+</div>
+
+{% if andre_ja %}
+<div class="card shadow-sm">
+    <div class="card-body py-3 px-4">
+        <h6 class="mb-2">🎉 {% trans "Disse har også sagt ja:" %}</h6>
+        <p class="mb-0 text-muted small">{{ andre_ja|join:", " }}</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

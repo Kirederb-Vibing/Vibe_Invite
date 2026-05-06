@@ -1,0 +1,11 @@
+{% extends 'events/base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Serverfejl" %}{% endblock %}
+{% block content %}
+<div class="text-center py-5">
+    <h1 class="display-1 text-muted">500</h1>
+    <h2 class="mb-3">{% trans "Noget gik galt" %}</h2>
+    <p class="text-muted mb-4">{% trans "Der opstod en uventet fejl. Prøv igen om lidt." %}</p>
+    <a href="/" class="btn btn-primary">{% trans "Gå til forsiden" %}</a>
+</div>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% load i18n %}{% blocktrans with navn=navn %}Hej {{ navn }},{% endblocktrans %}
+
+{% blocktrans with titel=event.titel %}Vi mangler stadig dit svar til {{ titel }}!{% endblocktrans %}
+
+{% if husstand_navn %}{% blocktrans with husstand=husstand_navn %}Du modtager denne besked som del af husstanden "{{ husstand }}".{% endblocktrans %}{% endif %}
+
+📅 {{ event.dato|date:"j. F Y, kl. H:i" }}
+📍 {{ event.sted }}
+{% if dage_tilbage == 0 %}⏰ {% trans "Eventet er i dag!" %}{% elif dage_tilbage == 1 %}⏰ {% trans "Eventet er i morgen!" %}{% else %}⏰ {% blocktrans with n=dage_tilbage %}{{ n }} dage til eventet.{% endblocktrans %}{% endif %}
+
+{% trans 'Dit svar er stadig "måske". Kan du komme?' %}
+
+👉 {% trans "Gå til din invitation og svar ja eller nej:" %}
+{{ rsvp_url }}
+
+{% if event.sidste_svardag %}{% trans "Sidste svardag:" %} {{ event.sidste_svardag|date:"j. F Y, kl. H:i" }}
+{% trans "Svarer du ikke inden da, regnes du automatisk som \"deltager ikke\"." %}
+{% endif %}{% trans "Med venlig hilsen" %}
+{{ event.oprettet_af.get_full_name|default:event.oprettet_af.username }}

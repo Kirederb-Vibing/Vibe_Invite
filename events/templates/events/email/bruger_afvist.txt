@@ -1,0 +1,5 @@
+{% load i18n %}{% trans "Hej" %} {{ navn }},
+
+{% trans "Din anmodning om adgang til Vibe Invite er desværre ikke godkendt." %}
+
+{% trans "Kontakt administratoren hvis du mener dette er en fejl." %}

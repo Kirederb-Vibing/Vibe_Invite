@@ -1,0 +1,1222 @@
+# Danish translations for Events app.
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: da\n"
+
+msgid "\"%(navn)s\" er allerede med i husstanden \"%(husstand)s\" i din gæstebog."
+msgstr ""
+
+msgid "\"%(navn)s\" er allerede med i husstanden \"%(husstand)s\" på dette event."
+msgstr ""
+
+msgid "\"%(navn)s\" findes allerede som deltager på dette event."
+msgstr ""
+
+msgid "\"%(navn)s\" findes allerede som solo deltager og blev ikke tilføjet til husstanden."
+msgstr ""
+
+msgid "\"%(navn)s\" findes allerede som solo kontakt i din gæstebog."
+msgstr ""
+
+msgid "\"%(navn)s\" findes allerede som solo kontakt og blev ikke tilføjet til husstanden."
+msgstr ""
+
+msgid "\"%(titel)s\" er arkiveret."
+msgstr ""
+
+msgid "\"%(titel)s\" er markeret som aflyst og gæsterne er notificeret."
+msgstr ""
+
+msgid "%(n)d gæst(er) tilføjet til eventet."
+msgstr ""
+
+msgid "%(n)d gæst(er) tilføjet."
+msgstr ""
+
+msgid "%(navn)s er allerede medredaktør."
+msgstr ""
+
+msgid "%(navn)s er fjernet fra gæstelisten."
+msgstr ""
+
+msgid "%(navn)s er fjernet som medredaktør."
+msgstr ""
+
+msgid "%(navn)s er nu delt med %(brugere)s."
+msgstr ""
+
+msgid "%(navn)s er nu tilføjet som medredaktør."
+msgstr ""
+
+msgid "%(navn)s er opdateret."
+msgstr ""
+
+msgid "%(navn)s er slettet fra din gæstebog."
+msgstr ""
+
+msgid "%(navn)s er tilføjet som deltager."
+msgstr ""
+
+msgid "%(navn)s er tilføjet til din gæstebog."
+msgstr ""
+
+msgid "Accepter"
+msgstr ""
+
+msgid "Accepter brugeren (link er gyldigt i 7 dage):"
+msgstr ""
+
+msgid "Adgangskode"
+msgstr ""
+
+msgid "Advarsel:"
+msgstr ""
+
+msgid "Afbud-årsag"
+msgstr ""
+
+msgid "Afbud-årsag:"
+msgstr ""
+
+msgid "Afgiv stemme"
+msgstr ""
+
+msgid "Afkryds husstand for hele husstanden som én, eller afkryds enkeltmedlemmer for solo-invitationer."
+msgstr ""
+
+msgid "Afkryds husstandens navn for at tilføje alle dens medlemmer som én husstand. Afkryds enkeltmedlemmer for at tilføje dem som solo-invitationer."
+msgstr ""
+
+msgid "Aflys event"
+msgstr ""
+
+msgid "Aflysning"
+msgstr ""
+
+msgid "Aflyst"
+msgstr ""
+
+msgid "Afstemning"
+msgstr ""
+
+msgid "Afstemning aktiveret"
+msgstr ""
+
+msgid "Afstemning oprettet."
+msgstr ""
+
+msgid "Afstemning slettet."
+msgstr ""
+
+msgid "Afstemninger"
+msgstr ""
+
+msgid "Afventer"
+msgstr ""
+
+msgid "Afventer svar"
+msgstr ""
+
+msgid "Afvis"
+msgstr ""
+
+msgid "Afvis brugeren:"
+msgstr ""
+
+msgid "Alle eksisterende invitations-links (vil vise 404)"
+msgstr ""
+
+msgid "Alle email-adresser tilknyttet husstanden"
+msgstr ""
+
+msgid "Alle gæster med en email-adresse modtager en aflysningsmail. Handlingen kan ikke fortrydes."
+msgstr ""
+
+msgid "Angiv et spørgsmål og mindst 2 svarmuligheder."
+msgstr ""
+
+msgid "Angivet årsag"
+msgstr ""
+
+msgid "Angivet årsag:"
+msgstr ""
+
+msgid "Annuller"
+msgstr ""
+
+msgid "Annullér"
+msgstr ""
+
+msgid "Antal dage før eventet den første reminder-mail sendes til \"måske\"-gæster."
+msgstr ""
+
+msgid "Arkiveret"
+msgstr ""
+
+msgid "Arkivér"
+msgstr ""
+
+msgid "Baggrundsbillede"
+msgstr ""
+
+msgid "Baggrundsbillede (valgfrit)"
+msgstr ""
+
+msgid "Baggrundsfarve"
+msgstr ""
+
+msgid "Barnedåb"
+msgstr ""
+
+msgid "Bekræft individuelle svar"
+msgstr ""
+
+msgid "Bekræft ændringer"
+msgstr ""
+
+msgid "Besked fra arrangøren"
+msgstr ""
+
+msgid "Besked fra arrangøren:"
+msgstr ""
+
+msgid "Besked til gæsterne"
+msgstr ""
+
+msgid "Beskær baggrundsbillede"
+msgstr ""
+
+msgid "Bestem om gæster kan skrive kommentarer og deltage i afstemninger. Deaktivering skjuler ikke eksisterende indhold — det vises blot grået ud uden mulighed for interaktion."
+msgstr ""
+
+msgid "Brug dette udsnit"
+msgstr ""
+
+msgid "Bruger afvist"
+msgstr ""
+
+msgid "Bruger aktiveret"
+msgstr ""
+
+msgid "Brugeranmodning"
+msgstr ""
+
+msgid "Brugernavn"
+msgstr ""
+
+msgid "Brugernavn:"
+msgstr ""
+
+msgid "Bruges til eventuelle opdateringer om eventet."
+msgstr ""
+
+msgid "Bryllup"
+msgstr ""
+
+msgid "Dato og tid"
+msgstr ""
+
+msgid "Deaktiveret"
+msgstr ""
+
+msgid "Del"
+msgstr ""
+
+msgid "Del et link som modtageren bruger til at tilmelde sig selv. Vælg hvilken type tilmelding linket skal åbne."
+msgstr ""
+
+msgid "Del invitation"
+msgstr ""
+
+msgid "Del link"
+msgstr ""
+
+msgid "Del med brugere"
+msgstr ""
+
+msgid "Deltager"
+msgstr ""
+
+msgid "Deltager ikke"
+msgstr ""
+
+msgid "Deltagere"
+msgstr ""
+
+msgid "Den bruger er allerede ejer af eventet."
+msgstr ""
+
+msgid "Den side du leder efter eksisterer ikke eller er blevet flyttet."
+msgstr ""
+
+msgid "Den ændring er ikke tilladt."
+msgstr ""
+
+msgid "Der opstod en uventet fejl. Prøv igen om lidt."
+msgstr ""
+
+msgid "Desktop"
+msgstr ""
+
+msgid "Det er synd I ikke kan!"
+msgstr ""
+
+msgid "Det er synd du ikke kan!"
+msgstr ""
+
+msgid "Dette er det unikke link gæsten bruger til at svare."
+msgstr ""
+
+msgid "Dette event er aflyst."
+msgstr ""
+
+msgid "Dette event er desværre aflyst."
+msgstr ""
+
+msgid "Dette link sendes til alle valgte medlemmer."
+msgstr ""
+
+msgid "Dette vil permanent slette:"
+msgstr ""
+
+msgid "Din anmodning er ikke godkendt"
+msgstr ""
+
+msgid "Din anmodning om adgang til Vibe Invite er desværre ikke godkendt."
+msgstr ""
+
+msgid "Din email"
+msgstr ""
+
+msgid "Din gæstebog er tom."
+msgstr ""
+
+msgid "Din konto er aktiveret"
+msgstr ""
+
+msgid "Din konto er ikke godkendt"
+msgstr ""
+
+msgid "Din konto er nu aktiveret"
+msgstr ""
+
+msgid "Din konto på Vibe Invite er nu godkendt og klar til brug."
+msgstr ""
+
+msgid "Disse har også sagt ja:"
+msgstr ""
+
+msgid "Disse har sagt ja:"
+msgstr ""
+
+msgid "Dit navn"
+msgstr ""
+
+msgid "Dit svar"
+msgstr ""
+
+msgid "Dit svar er stadig "
+msgstr ""
+
+msgid "Dit svar er stadig <strong>"
+msgstr ""
+
+msgid "Dit svar kan ikke længere ændres."
+msgstr ""
+
+msgid "Du er fjernet som medredaktør på \"%(titel)s\"."
+msgstr ""
+
+msgid "Du er hermed inviteret! Vi håber du kan komme."
+msgstr ""
+
+msgid "Du har endnu ikke svaret."
+msgstr ""
+
+msgid "Du har ingen aktive events."
+msgstr ""
+
+msgid "Du har svaret"
+msgstr ""
+
+msgid "Du kan stadig melde afbud, men skal angive en årsag."
+msgstr ""
+
+msgid "Du vil ikke længere kunne se eller redigere eventet"
+msgstr ""
+
+msgid "Efterfølgende reminders"
+msgstr ""
+
+msgid "Ejeren kan tilføje dig igen senere hvis nødvendigt"
+msgstr ""
+
+msgid "Eller kopiér dette link:"
+msgstr ""
+
+msgid "Eller vælg individuelt:"
+msgstr ""
+
+msgid "Eller ændr individuelle svar:"
+msgstr ""
+
+msgid "Email"
+msgstr ""
+
+msgid "Email (valgfrit)"
+msgstr ""
+
+msgid "Email på bruger der skal tilføjes"
+msgstr ""
+
+msgid "Email:"
+msgstr ""
+
+msgid "En husstand skal have mindst ét medlem."
+msgstr ""
+
+msgid "En ny bruger har anmodet om adgang og venter på godkendelse."
+msgstr ""
+
+msgid "En ny bruger har anmodet om adgang til Vibe Invite."
+msgstr ""
+
+msgid "Enkeltperson"
+msgstr ""
+
+msgid "Er du sikker på at du vil slette denne husstand fra eventet?"
+msgstr ""
+
+msgid "Er du sikker på at du vil slette dette event?"
+msgstr ""
+
+msgid "Er du sikker på, at du vil dele"
+msgstr ""
+
+msgid "Eventet \"%(titel)s\" er oprettet."
+msgstr ""
+
+msgid "Eventet \"%(titel)s\" og alle tilhørende invitationer er slettet."
+msgstr ""
+
+msgid "Eventet er i dag!"
+msgstr ""
+
+msgid "Eventet er i morgen!"
+msgstr ""
+
+msgid "Eventet forbliver uberørt"
+msgstr ""
+
+msgid "Vibe Invite"
+msgstr ""
+
+msgid "Vibe Invite · automatisk besked"
+msgstr ""
+
+msgid "F.eks. "
+msgstr ""
+
+msgid "Farve på illustrationerne i baggrunden. Tom = brug tema-farve."
+msgstr ""
+
+msgid "Farver"
+msgstr ""
+
+msgid "Fest / Nytår"
+msgstr ""
+
+msgid "Filtrer efter tag:"
+msgstr ""
+
+msgid "Fjern"
+msgstr ""
+
+msgid "Fjern billede"
+msgstr ""
+
+msgid "Fjern dig selv"
+msgstr ""
+
+msgid "Fjern dig selv som medredaktør?"
+msgstr ""
+
+msgid "Fjern mig"
+msgstr ""
+
+msgid "Fjern mig som medredaktør"
+msgstr ""
+
+msgid "Forhåndsvisning af mønster"
+msgstr ""
+
+msgid "Forhåndsvisning på forskellige skærme"
+msgstr ""
+
+msgid "Forkert brugernavn eller adgangskode. Hvis din konto er helt ny, mangler den måske stadig at blive godkendt."
+msgstr ""
+
+msgid "Fortryd"
+msgstr ""
+
+msgid "Fortsæt til svar"
+msgstr ""
+
+msgid "Fra gæstebog"
+msgstr ""
+
+msgid "Fravælg alle"
+msgstr ""
+
+msgid "Fx &quot;Familie Hansen&quot;"
+msgstr ""
+
+msgid "Fx Familien Hansen"
+msgstr ""
+
+msgid "Fælles invitationslink"
+msgstr ""
+
+msgid "Fødselsdag"
+msgstr ""
+
+msgid "Gem"
+msgstr ""
+
+msgid "Gem kontakt"
+msgstr ""
+
+msgid "Gem og gå tilbage"
+msgstr ""
+
+msgid "Gem og tilføj endnu en"
+msgstr ""
+
+msgid "Gem ændringer"
+msgstr ""
+
+msgid "Gå til dashboard"
+msgstr ""
+
+msgid "Gå til din invitation og svar ja eller nej:"
+msgstr ""
+
+msgid "Gå til forsiden"
+msgstr ""
+
+msgid "Gå til gæstebogen"
+msgstr ""
+
+msgid "Gæstebog"
+msgstr ""
+
+msgid "Gæster kan skrive kommentarer på RSVP-siden."
+msgstr ""
+
+msgid "Gæster kan stemme på afstemninger på RSVP-siden."
+msgstr ""
+
+msgid "Handlingen kan ikke fortrydes."
+msgstr ""
+
+msgid "Har du allerede en konto?"
+msgstr ""
+
+msgid "Hej"
+msgstr ""
+
+msgid "Hele husstanden kommer ikke"
+msgstr ""
+
+msgid "Husstand"
+msgstr ""
+
+msgid "Husstand / familie"
+msgstr ""
+
+msgid "Husstande"
+msgstr ""
+
+msgid "Husstanden \"%(navn)s\" er opdateret."
+msgstr ""
+
+msgid "Husstanden \"%(navn)s\" er oprettet."
+msgstr ""
+
+msgid "Husstanden \"%(navn)s\" er slettet fra din gæstebog."
+msgstr ""
+
+msgid "Husstanden \"%(navn)s\" er slettet."
+msgstr ""
+
+msgid "Husstanden \"%(navn)s\" findes allerede i din gæstebog."
+msgstr ""
+
+msgid "Husstanden \"%(navn)s\" findes allerede på dette event."
+msgstr ""
+
+msgid "Husstanden og dens fælles invitationslink"
+msgstr ""
+
+msgid "Husstandens navn"
+msgstr ""
+
+msgid "Husstandsmedlemmer"
+msgstr ""
+
+msgid "Hver 2. dag"
+msgstr ""
+
+msgid "Hver 3. dag"
+msgstr ""
+
+msgid "Hver dag"
+msgstr ""
+
+msgid "Hvis du ændrer token, vil det gamle link stoppe med at virke."
+msgstr ""
+
+msgid "Hvis du ændrer token, virker det gamle link ikke længere."
+msgstr ""
+
+msgid "Hvis en gæst har svaret \\"
+msgstr ""
+
+msgid "Hvor ofte skal der sendes yderligere reminders efter den første?"
+msgstr ""
+
+msgid "Hvorfor kan I ikke komme alligevel?"
+msgstr ""
+
+msgid "Hvorfor kan du ikke komme alligevel?"
+msgstr ""
+
+msgid "I har endnu ikke svaret."
+msgstr ""
+
+msgid "I har svaret"
+msgstr ""
+
+msgid "I har svaret individuelt:"
+msgstr ""
+
+msgid "Indtast en email-adresse."
+msgstr ""
+
+msgid "Ingen"
+msgstr ""
+
+msgid "Ingen afstemninger endnu."
+msgstr ""
+
+msgid "Ingen andre brugere på systemet."
+msgstr ""
+
+msgid "Ingen bruger fundet med email \"%(email)s\". Brugeren skal have en konto."
+msgstr ""
+
+msgid "Ingen email – kan ikke inviteres separat"
+msgstr ""
+
+msgid "Ingen endnu"
+msgstr ""
+
+msgid "Ingen husstande endnu."
+msgstr ""
+
+msgid "Ingen husstande i gæstebogen."
+msgstr ""
+
+msgid "Ingen kommentarer endnu."
+msgstr ""
+
+msgid "Ingen kommentarer endnu. Vær den første!"
+msgstr ""
+
+msgid "Ingen konto?"
+msgstr ""
+
+msgid "Ingen medredaktører endnu."
+msgstr ""
+
+msgid "Ingen solo kontakter endnu."
+msgstr ""
+
+msgid "Ingen solo kontakter i gæstebogen."
+msgstr ""
+
+msgid "Ingen yderligere reminders"
+msgstr ""
+
+msgid "Interaktivitet på RSVP-siden"
+msgstr ""
+
+msgid "Invitation"
+msgstr ""
+
+msgid "Invitationslink"
+msgstr ""
+
+msgid "Invitér gæster"
+msgstr ""
+
+msgid "Ja"
+msgstr ""
+
+msgid "Ja, alle"
+msgstr ""
+
+msgid "Ja, fjern mig som medredaktør"
+msgstr ""
+
+msgid "Ja, jeg kommer"
+msgstr ""
+
+msgid "Ja, slet"
+msgstr ""
+
+msgid "Ja, slet eventet permanent"
+msgstr ""
+
+msgid "Ja, vi kommer alle"
+msgstr ""
+
+msgid "Jeres svar"
+msgstr ""
+
+msgid "Jul"
+msgstr ""
+
+msgid "Kommaseparerede tags, fx "
+msgstr ""
+
+msgid "Kommentarer"
+msgstr ""
+
+msgid "Kommentarspor"
+msgstr ""
+
+msgid "Kommentarspor aktiveret"
+msgstr ""
+
+msgid "Kontakt administratoren hvis du mener dette er en fejl."
+msgstr ""
+
+msgid "Kontakt administratoren, hvis du mener dette er en fejl."
+msgstr ""
+
+msgid "Kopier"
+msgstr ""
+
+msgid "Kopieret"
+msgstr ""
+
+msgid "Kopieret!"
+msgstr ""
+
+msgid "Kopiér"
+msgstr ""
+
+msgid "Kopiér link"
+msgstr ""
+
+msgid "Kun ejeren kan fjerne medredaktører."
+msgstr ""
+
+msgid "Kun ejeren kan tilføje medredaktører."
+msgstr ""
+
+msgid "Lad feltet stå tomt for ingen reminder."
+msgstr ""
+
+msgid "Link til ønskeliste (fx Ønskeskyen.dk). Vises på RSVP-siden."
+msgstr ""
+
+msgid "Linkene er gyldige i 7 dage. Brugeren notificeres automatisk pr. email."
+msgstr ""
+
+msgid "Log ind"
+msgstr ""
+
+msgid "Log ind her:"
+msgstr ""
+
+msgid "Log ind nu"
+msgstr ""
+
+msgid "Log ud"
+msgstr ""
+
+msgid "Lukket"
+msgstr ""
+
+msgid "Med venlig hilsen"
+msgstr ""
+
+msgid "Medlemmer"
+msgstr ""
+
+msgid "Medredaktør"
+msgstr ""
+
+msgid "Medredaktører"
+msgstr ""
+
+msgid "Medredaktører kan se og redigere eventet, men kan ikke slette det."
+msgstr ""
+
+msgid "Meld afbud"
+msgstr ""
+
+msgid "Mindst én skal have en email-adresse."
+msgstr ""
+
+msgid "Mine events"
+msgstr ""
+
+msgid "Mobil"
+msgstr ""
+
+msgid "Måske"
+msgstr ""
+
+msgid "Måske (hele husstanden)"
+msgstr ""
+
+msgid "Mønsterfarve"
+msgstr ""
+
+msgid "Navn"
+msgstr ""
+
+msgid "Navn er påkrævet. Email og telefon er valgfrie."
+msgstr ""
+
+msgid "Navn:"
+msgstr ""
+
+msgid "Nej"
+msgstr ""
+
+msgid "Nej, jeg kan ikke"
+msgstr ""
+
+msgid "Nej, vi kan ikke"
+msgstr ""
+
+msgid "Nej, vi kommer ikke"
+msgstr ""
+
+msgid "Noget gik galt"
+msgstr ""
+
+msgid "Noter"
+msgstr ""
+
+msgid "Nulstil"
+msgstr ""
+
+msgid "Nuværende billede"
+msgstr ""
+
+msgid "Ny afstemning"
+msgstr ""
+
+msgid "Ny brugeranmodning"
+msgstr ""
+
+msgid "Ny husstand"
+msgstr ""
+
+msgid "Ny kontakt"
+msgstr ""
+
+msgid "Ny status:"
+msgstr ""
+
+msgid "Nye konti skal godkendes af en administrator før du kan logge ind."
+msgstr ""
+
+msgid "Nyt event"
+msgstr ""
+
+msgid "Når du vælger et billede, kan du beskære det."
+msgstr ""
+
+msgid "Opdateret overblik"
+msgstr ""
+
+msgid "Opret afstemning"
+msgstr ""
+
+msgid "Opret dit første event"
+msgstr ""
+
+msgid "Opret en her"
+msgstr ""
+
+msgid "Opret husstand"
+msgstr ""
+
+msgid "Opret konto"
+msgstr ""
+
+msgid "Overblik"
+msgstr ""
+
+msgid "Personalisering"
+msgstr ""
+
+msgid "Påmindelse"
+msgstr ""
+
+msgid "Påske"
+msgstr ""
+
+msgid "Rediger"
+msgstr ""
+
+msgid "Redigér event"
+msgstr ""
+
+msgid "Redigér oplysninger"
+msgstr ""
+
+msgid "Reminders til \\"
+msgstr ""
+
+msgid "Ryd filter"
+msgstr ""
+
+msgid "Se eller ændre jeres svar"
+msgstr ""
+
+msgid "Se eller ændre mit svar"
+msgstr ""
+
+msgid "Se fuldt overblik"
+msgstr ""
+
+msgid "Se overblikket her:"
+msgstr ""
+
+msgid "Se på kort"
+msgstr ""
+
+msgid "Selve eventet"
+msgstr ""
+
+msgid "Send"
+msgstr ""
+
+msgid "Send afbud"
+msgstr ""
+
+msgid "Send aflysning til alle gæster"
+msgstr ""
+
+msgid "Send første reminder"
+msgstr ""
+
+msgid "Send invitationer"
+msgstr ""
+
+msgid "Send kommentar"
+msgstr ""
+
+msgid "Sendte %(inv)d invitationer + %(husstand)d husstandsmedlemmer."
+msgstr ""
+
+msgid "Serverfejl"
+msgstr ""
+
+msgid "Side ikke fundet"
+msgstr ""
+
+msgid "Siden findes ikke"
+msgstr ""
+
+msgid "Sidens baggrundsfarve (standard: hvid)."
+msgstr ""
+
+msgid "Sidste svardag"
+msgstr ""
+
+msgid "Sidste svardag:"
+msgstr ""
+
+msgid "Skift stemme"
+msgstr ""
+
+msgid "Slet"
+msgstr ""
+
+msgid "Slet denne afstemning?"
+msgstr ""
+
+msgid "Slet event"
+msgstr ""
+
+msgid "Slet gæst"
+msgstr ""
+
+msgid "Solo"
+msgstr ""
+
+msgid "Solo kontakter"
+msgstr ""
+
+msgid "Sommerfest"
+msgstr ""
+
+msgid "Spørgsmål"
+msgstr ""
+
+msgid "Spørgsmål, fx: Hvad skal vi spise?"
+msgstr ""
+
+msgid "Standard"
+msgstr ""
+
+msgid "Status"
+msgstr ""
+
+msgid "Sted"
+msgstr ""
+
+msgid "Svar afgivet individuelt"
+msgstr ""
+
+msgid "Svar for hele husstanden her:"
+msgstr ""
+
+msgid "Svar ja eller nej"
+msgstr ""
+
+msgid "Svar opdateret"
+msgstr ""
+
+msgid "Svar på invitationen"
+msgstr ""
+
+msgid "Svar på invitationen her:"
+msgstr ""
+
+msgid "Svarer du ikke inden da, regnes du automatisk som \\"
+msgstr ""
+
+msgid "Svaret kan ikke ændres."
+msgstr ""
+
+msgid "Svarfrist"
+msgstr ""
+
+msgid "Svarfrist:"
+msgstr ""
+
+msgid "Svarfristen er overskredet."
+msgstr ""
+
+msgid "Svarmulighed"
+msgstr ""
+
+msgid "Tablet"
+msgstr ""
+
+msgid "Tags"
+msgstr ""
+
+msgid "Tak for dit svar"
+msgstr ""
+
+msgid "Tak for dit svar!"
+msgstr ""
+
+msgid "Tak for jeres individuelle svar!"
+msgstr ""
+
+msgid "Tak for jeres svar!"
+msgstr ""
+
+msgid "Telefon"
+msgstr ""
+
+msgid "Tema"
+msgstr ""
+
+msgid "Tildel email og vælg om invitationen skal sendes til medlemmet."
+msgstr ""
+
+msgid "Tilføj"
+msgstr ""
+
+msgid "Tilføj deltager"
+msgstr ""
+
+msgid "Tilføj fra gæstebog"
+msgstr ""
+
+msgid "Tilføj husstand"
+msgstr ""
+
+msgid "Tilføj medlem"
+msgstr ""
+
+msgid "Tilføj mindst ét husstandsmedlem."
+msgstr ""
+
+msgid "Tilføj person"
+msgstr ""
+
+msgid "Tilføj solo kontakt"
+msgstr ""
+
+msgid "Tilføj svarmulighed"
+msgstr ""
+
+msgid "Tilføj til kalender"
+msgstr ""
+
+msgid "Tilføj valgte til eventet"
+msgstr ""
+
+msgid "Tilmeld dig"
+msgstr ""
+
+msgid "Token (del af link)"
+msgstr ""
+
+msgid "Token (del af linket)"
+msgstr ""
+
+msgid "Token (invitationslink)"
+msgstr ""
+
+msgid "Træk for at flytte · Scroll/knib for at zoome"
+msgstr ""
+
+msgid "Ugentlig"
+msgstr ""
+
+msgid "Ugyldigt eller udløbet link."
+msgstr ""
+
+msgid "Valgt billede"
+msgstr ""
+
+msgid "Vi håber I kan alligevel."
+msgstr ""
+
+msgid "Vi håber at se dig næste gang."
+msgstr ""
+
+msgid "Vi håber at se jer næste gang."
+msgstr ""
+
+msgid "Vi håber at ses en anden gang. Undskyld for ulejligheden."
+msgstr ""
+
+msgid "Vi håber du kan alligevel."
+msgstr ""
+
+msgid "Vises i aflysningsmailen og på RSVP-siden."
+msgstr ""
+
+msgid "Vises i headeren på RSVP-siden (anbefalet: 1200×400 px)."
+msgstr ""
+
+msgid "Vises i mailen og på gæsternes RSVP-side."
+msgstr ""
+
+msgid "Vælg alle"
+msgstr ""
+
+msgid "Vælg hvem der skal have adgang til"
+msgstr ""
+
+msgid "Vælg hvem der skal inviteres med det samme. Du kan altid tilføje flere bagefter."
+msgstr ""
+
+msgid "Vælg mindst én bruger at dele med."
+msgstr ""
+
+msgid "Vælges kun hvis der er sat en første reminder ovenfor."
+msgstr ""
+
+msgid "dage før eventet"
+msgstr ""
+
+msgid "din anmodning om adgang til Vibe Invite er desværre ikke godkendt."
+msgstr ""
+
+msgid "din konto på <strong>Vibe Invite</strong> er nu godkendt og klar til brug."
+msgstr ""
+
+msgid "for at tilføje kontakter."
+msgstr ""
+
+msgid "gæster kan skrive beskeder til hinanden"
+msgstr ""
+
+msgid "gæster kan stemme på spørgsmål du opretter"
+msgstr ""
+
+msgid "ingen"
+msgstr ""
+
+msgid "ingen email"
+msgstr ""
+
+msgid "ja"
+msgstr ""
+
+msgid "med"
+msgstr ""
+
+msgid "medl."
+msgstr ""
+
+msgid "nej"
+msgstr ""
+
+msgid "tom = tema-standard"
+msgstr ""
+
+msgid "valgfri"
+msgstr ""
+
+msgid "valgfrit"
+msgstr ""
+
+msgid "Åbn"
+msgstr ""
+
+msgid "Åbn menu"
+msgstr ""
+
+msgid "Ændr svar for hele husstanden:"
+msgstr ""
+
+msgid "Ændr svar:"
+msgstr ""
+
+msgid "Ændre svar"
+msgstr ""
+
+msgid "Ændringer gemt."
+msgstr ""
+
+msgid "Ændringer til %(navn)s er gemt."
+msgstr ""
+
+msgid "Ønskeliste"
+msgstr ""
+
+msgid "Ønskeliste-link"
+msgstr ""
+
+msgid "Ønskeliste-link (valgfrit)"
+msgstr ""
+

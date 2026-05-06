@@ -1,0 +1,86 @@
+{% extends 'events/rsvp_base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Tilmeld dig" %} – {{ event.titel }}{% endblock %}
+
+{% block content %}
+<h4 class="mb-1">{% trans "Tilmeld dig" %}</h4>
+<p class="text-muted small mb-3">{% blocktrans with titel=event.titel %}Udfyld nedenstående for at tilmelde dig <strong>{{ titel }}</strong>.{% endblocktrans %}</p>
+
+{% if fejl %}
+<div class="alert alert-danger py-2">
+    <ul class="mb-0 ps-3">
+        {% for f in fejl %}<li>{{ f }}</li>{% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{% if delelink.type == 'solo' %}
+<!-- SOLO-FORMULAR -->
+<form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label class="form-label fw-semibold">{% trans "Dit navn" %} <span class="text-danger">*</span></label>
+        <input type="text" name="navn" class="form-control" value="{{ request.POST.navn }}" required autofocus>
+    </div>
+    <div class="mb-4">
+        <label class="form-label fw-semibold">{% trans "Din email" %} <span class="text-danger">*</span></label>
+        <input type="email" name="email" class="form-control" value="{{ request.POST.email }}" required>
+        <div class="form-text">{% trans "Bruges til eventuelle opdateringer om eventet." %}</div>
+    </div>
+    <button type="submit" class="btn btn-primary w-100">{% trans "Fortsæt til svar" %} →</button>
+</form>
+
+{% else %}
+<!-- HUSSTAND-FORMULAR -->
+<form method="post" id="husstand-form">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label class="form-label fw-semibold">{% trans "Husstandens navn" %} <span class="text-danger">*</span></label>
+        <input type="text" name="husstand_navn" class="form-control" value="{{ request.POST.husstand_navn }}" placeholder="{% trans 'Fx &quot;Familie Hansen&quot;' %}" required autofocus>
+    </div>
+
+    <div class="mb-1 fw-semibold">{% trans "Husstandsmedlemmer" %} <span class="text-danger">*</span></div>
+    <div class="form-text mb-2">{% trans "Mindst én skal have en email-adresse." %}</div>
+
+    <div id="medlemmer-liste">
+        <div class="border rounded p-2 mb-2 bg-light medlem-row">
+            <div class="d-flex gap-2 align-items-center mb-1">
+                <input type="text" name="medlem_navn[]" class="form-control form-control-sm" placeholder="{% trans 'Navn' %}" required>
+                <button type="button" class="btn btn-sm btn-outline-danger fjern-medlem flex-shrink-0">×</button>
+            </div>
+            <input type="email" name="medlem_email[]" class="form-control form-control-sm" placeholder="{% trans 'Email' %}">
+        </div>
+    </div>
+
+    <button type="button" class="btn btn-sm btn-outline-secondary mb-4" id="tilfoej-medlem">+ {% trans "Tilføj person" %}</button>
+
+    <button type="submit" class="btn btn-primary w-100">{% trans "Fortsæt til svar" %} →</button>
+</form>
+
+<script>
+document.getElementById('tilfoej-medlem').addEventListener('click', function () {
+    const liste = document.getElementById('medlemmer-liste');
+    const row = document.createElement('div');
+    row.className = 'border rounded p-2 mb-2 bg-light medlem-row';
+    row.innerHTML = `
+        <div class="d-flex gap-2 align-items-center mb-1">
+            <input type="text" name="medlem_navn[]" class="form-control form-control-sm" placeholder="{% trans 'Navn' %}" required>
+            <button type="button" class="btn btn-sm btn-outline-danger fjern-medlem flex-shrink-0">x</button>
+        </div>
+        <input type="email" name="medlem_email[]" class="form-control form-control-sm" placeholder="{% trans 'Email' %}">
+    `;
+    liste.appendChild(row);
+    row.querySelector('input').focus();
+});
+
+document.getElementById('medlemmer-liste').addEventListener('click', function (e) {
+    if (e.target.classList.contains('fjern-medlem')) {
+        const raekker = document.querySelectorAll('.medlem-row');
+        if (raekker.length > 1) {
+            e.target.closest('.medlem-row').remove();
+        }
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

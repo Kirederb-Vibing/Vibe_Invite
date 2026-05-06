@@ -1,0 +1,99 @@
+{# Inkluderes i rsvp_oversigt.html og rsvp_husstand_oversigt.html #}
+{# Forventer: event, kommentarer, kommentar_form, afstemninger, guest_token #}
+{% load i18n %}
+
+{% if afstemninger %}
+<div class="card shadow-sm mt-3">
+    <div class="card-body p-4">
+        <h6 class="mb-3">📊 {% trans "Afstemning" %}{{ afstemninger|length|pluralize:"er" }}</h6>
+        {% for a in afstemninger %}
+        <div class="mb-4 {% if not event.afstemning_aktiveret %}opacity-50{% endif %}">
+            <p class="fw-semibold mb-2">{{ a.spoergsmaal }}</p>
+
+            {% if a.har_stemt or not event.afstemning_aktiveret %}
+            {# Vis resultater #}
+            {% for v in a.valg %}
+            <div class="mb-2">
+                <div class="d-flex justify-content-between small mb-1">
+                    <span {% if v.valgt %}class="fw-semibold text-primary"{% endif %}>
+                        {% if v.valgt %}✓ {% endif %}{{ v.tekst }}
+                    </span>
+                    <span class="text-muted">{{ v.antal }}{% if a.total %} ({{ v.pct }}%){% endif %}</span>
+                </div>
+                <div class="progress" style="height:6px;">
+                    <div class="progress-bar {% if v.valgt %}bg-primary{% else %}bg-secondary{% endif %}" style="width:{{ v.pct }}%"></div>
+                </div>
+            </div>
+            {% endfor %}
+            <div class="small text-muted mt-1">{% blocktrans with n=a.total %}{{ n }} stemme(r) i alt{% endblocktrans %}</div>
+
+            {% if a.har_stemt and event.afstemning_aktiveret %}
+            {# Mulighed for at skifte stemme #}
+            <form method="post" action="{% url 'afstemning_stem' guest_token a.id %}" class="mt-2">
+                {% csrf_token %}
+                <div class="d-flex gap-2 flex-wrap align-items-center">
+                    <select name="valg" class="form-select form-select-sm" style="max-width:220px;">
+                        {% for v in a.valg %}
+                        <option value="{{ v.id }}" {% if v.valgt %}selected{% endif %}>{{ v.tekst }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-sm btn-outline-primary">{% trans "Skift stemme" %}</button>
+                </div>
+            </form>
+            {% endif %}
+
+            {% else %}
+            {# Vis stemme-formular #}
+            <form method="post" action="{% url 'afstemning_stem' guest_token a.id %}">
+                {% csrf_token %}
+                {% for v in a.valg %}
+                <div class="form-check mb-1">
+                    <input class="form-check-input" type="radio" name="valg" value="{{ v.id }}" id="valg_{{ a.id }}_{{ v.id }}" required>
+                    <label class="form-check-label" for="valg_{{ a.id }}_{{ v.id }}">{{ v.tekst }}</label>
+                </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-sm btn-primary mt-2">{% trans "Afgiv stemme" %}</button>
+            </form>
+            {% endif %}
+        </div>
+        {% if not forloop.last %}<hr class="my-3">{% endif %}
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<div class="card shadow-sm mt-3">
+    <div class="card-body p-4">
+        <h6 class="mb-3">💬 {% trans "Kommentarer" %}
+            {% if not event.kommentarer_aktiveret %}<span class="badge bg-secondary ms-1" style="font-size:.65rem;">{% trans "Lukket" %}</span>{% endif %}
+        </h6>
+
+        <div class="{% if not event.kommentarer_aktiveret %}opacity-50{% endif %}">
+            {% for k in kommentarer %}
+            <div class="d-flex gap-2 mb-3">
+                <div class="flex-shrink-0 rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
+                     style="width:34px;height:34px;font-size:.85rem;font-weight:bold;">
+                    {{ k.navn|slice:":1"|upper }}
+                </div>
+                <div class="flex-grow-1">
+                    <div class="bg-light rounded p-2 px-3">
+                        <div class="fw-semibold small">{{ k.navn }}</div>
+                        <div class="small" style="white-space:pre-wrap;">{{ k.tekst }}</div>
+                    </div>
+                    <div class="text-muted" style="font-size:.7rem;">{{ k.oprettet|date:"j. F Y, H:i" }}</div>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-muted small mb-3">{% trans "Ingen kommentarer endnu. Vær den første!" %}</p>
+            {% endfor %}
+        </div>
+
+        {% if event.kommentarer_aktiveret %}
+        <form method="post" action="{% url 'kommentar_opret' guest_token %}" class="mt-2">
+            {% csrf_token %}
+            {{ kommentar_form.tekst }}
+            <button type="submit" class="btn btn-sm btn-primary mt-2">{% trans "Send kommentar" %}</button>
+        </form>
+        {% endif %}
+    </div>
+</div>

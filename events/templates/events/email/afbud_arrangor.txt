@@ -1,0 +1,22 @@
+{% load i18n %}{% trans "Hej" %} {{ arrangor.first_name|default:arrangor.username }},
+
+{% blocktrans with navn=invitation.navn titel=event.titel %}{{ navn }} har meldt afbud til "{{ titel }}" efter svarfristen.{% endblocktrans %}
+{% if invitation.afbud_aarsag %}
+{% trans "Angivet årsag:" %}
+"{{ invitation.afbud_aarsag }}"
+{% endif %}
+
+— {% trans "Opdateret overblik" %} —
+
+{% trans "Deltager" %} ({{ ja_liste|length }}):
+{% for navn in ja_liste %}  • {{ navn }}
+{% empty %}  ({% trans "ingen" %})
+{% endfor %}
+
+{% trans "Måske" %} ({{ maaske_liste|length }}):
+{% for navn in maaske_liste %}  • {{ navn }}
+{% empty %}  ({% trans "ingen" %})
+{% endfor %}
+
+{% trans "Se overblikket her:" %}
+{{ overblik_url }}

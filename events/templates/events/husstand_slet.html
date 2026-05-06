@@ -1,0 +1,42 @@
+{% extends 'events/base.html' %}
+{% load i18n %}
+{% block title %}{% blocktrans with navn=husstand.navn %}Slet {{ navn }}{% endblocktrans %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">{% trans "Mine events" %}</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'event_overblik' event.slug %}">{{ event.titel }}</a></li>
+                <li class="breadcrumb-item active">{% blocktrans with navn=husstand.navn %}Slet {{ navn }}{% endblocktrans %}</li>
+            </ol>
+        </nav>
+
+        <div class="card shadow-sm border-danger">
+            <div class="card-body p-4">
+                <h2 class="text-danger mb-3">{% blocktrans with navn=husstand.navn %}Slet "{{ navn }}"{% endblocktrans %}</h2>
+                <p>{% trans "Er du sikker på at du vil slette denne husstand fra eventet?" %}</p>
+
+                <div class="alert alert-warning">
+                    <strong>{% trans "Dette vil permanent slette:" %}</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>{% trans "Husstanden og dens fælles invitationslink" %}</li>
+                        <li>{% blocktrans with n=husstand.medlemmer.count %}{{ n }} medlemmer{% endblocktrans %}</li>
+                        <li>{% trans "Alle email-adresser tilknyttet husstanden" %}</li>
+                    </ul>
+                </div>
+                <p><strong>{% trans "Handlingen kan ikke fortrydes." %}</strong></p>
+
+                <form class="mt-4" method="post">
+                    {% csrf_token %}
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-danger">{% trans "Ja, slet" %}</button>
+                        <a href="{% url 'husstand_rediger' event.slug husstand.token %}" class="btn btn-outline-secondary">{% trans "Annuller" %}</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

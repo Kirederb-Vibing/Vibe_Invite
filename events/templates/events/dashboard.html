@@ -1,0 +1,67 @@
+{% extends 'events/base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Mine events" %}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">{% trans "Mine events" %}</h2>
+    <a href="{% url 'event_opret' %}" class="btn btn-primary">+ {% trans "Nyt event" %}</a>
+</div>
+
+{% if events %}
+    <div class="list-group mb-4">
+        {% for event in events %}
+            <a href="{% url 'event_overblik' event.slug %}" class="list-group-item list-group-item-action">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h5 class="mb-1">
+                            {{ event.titel }}
+                            {% if event.aflyst %}<span class="badge bg-secondary ms-1">{% trans "Aflyst" %}</span>{% endif %}
+                        </h5>
+                        <p class="mb-1 text-muted">
+                            📅 {{ event.dato|date:"j. F Y, H:i" }} · 📍 {{ event.sted }}
+                        </p>
+                        {% if event.sidste_svardag %}
+                            <small class="text-muted">{% trans "Svarfrist" %}: {{ event.sidste_svardag|date:"j. F Y, H:i" }}</small>
+                        {% endif %}
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-success">{% blocktrans with count=event.invitation_set.count %}{{ count }} inviteret{% endblocktrans %}</span>
+                        {% if event.oprettet_af != user %}
+                            <br><small class="text-muted mt-1 d-inline-block">{% trans "Medredaktør" %}</small>
+                        {% endif %}
+                    </div>
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="card mb-4">
+        <div class="card-body text-center p-5">
+            <p class="text-muted mb-3">{% trans "Du har ingen aktive events." %}</p>
+            <a href="{% url 'event_opret' %}" class="btn btn-primary">{% trans "Opret dit første event" %}</a>
+        </div>
+    </div>
+{% endif %}
+
+{% if arkiverede %}
+<details class="mt-2">
+    <summary class="text-muted small" style="cursor:pointer;">{% blocktrans with count=arkiverede|length %}Arkiverede events ({{ count }}){% endblocktrans %}</summary>
+    <div class="list-group mt-2">
+        {% for event in arkiverede %}
+            <a href="{% url 'event_overblik' event.slug %}" class="list-group-item list-group-item-action text-muted">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="mb-1">
+                            {{ event.titel }}
+                            {% if event.aflyst %}<span class="badge bg-secondary ms-1">{% trans "Aflyst" %}</span>{% endif %}
+                        </h6>
+                        <p class="mb-0 small">📅 {{ event.dato|date:"j. F Y" }} · 📍 {{ event.sted }}</p>
+                    </div>
+                    <span class="badge bg-light text-muted">{% trans "Arkiveret" %}</span>
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+</details>
+{% endif %}
+{% endblock %}

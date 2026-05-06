@@ -1,0 +1,96 @@
+{% extends 'events/rsvp_base.html' %}
+{% load i18n %}
+{% block title %}{{ event.titel }} – {% if er_solo %}{% trans "Dit svar" %}{% else %}{% trans "Jeres svar" %}{% endif %}{% endblock %}
+{% block content %}
+{% if event.aflyst %}
+<div class="alert alert-secondary mb-3">
+    <strong>❌ {% trans "Dette event er desværre aflyst." %}</strong>
+    {% if event.aflysning_besked %}<br>{{ event.aflysning_besked }}{% endif %}
+</div>
+{% endif %}
+<div class="card shadow-sm mb-3">
+    <div class="card-body p-4">
+        <p>{% blocktrans with navn=solo_navn|default:husstand.navn %}Hej <strong>{{ navn }}</strong>,{% endblocktrans %}</p>
+
+        {% if husstand.status == 'ja' %}
+            <div class="alert alert-success">✅ {% if er_solo %}{% trans "Du har svaret" %} <strong>{% trans "Ja, jeg kommer" %}</strong>.{% else %}{% trans "I har svaret" %} <strong>{% trans "Ja, vi kommer alle" %}</strong>.{% endif %}</div>
+        {% elif husstand.status == 'maaske' %}
+            <div class="alert alert-warning">🤔 {% if er_solo %}{% trans "Du har svaret" %} <strong>{% trans "Måske" %}</strong>.{% else %}{% trans "I har svaret" %} <strong>{% trans "Måske" %}</strong>.{% endif %}</div>
+        {% elif husstand.status == 'nej' %}
+            <div class="alert alert-danger">❌ {% if er_solo %}{% trans "Du har svaret" %} <strong>{% trans "Nej, jeg kan ikke" %}</strong>.{% else %}{% trans "I har svaret" %} <strong>{% trans "Nej, vi kan ikke" %}</strong>.{% endif %}</div>
+        {% elif husstand.status == 'individuelt' %}
+            <div class="alert alert-info">
+                {% trans "I har svaret individuelt:" %}
+                <ul class="mb-0 mt-2">
+                {% for m in medlemmer %}
+                    <li>{{ m.navn }}: {% if m.status == 'ja' %}✅{% elif m.status == 'nej' %}❌{% else %}⏳{% endif %} {{ m.get_status_display }}</li>
+                {% endfor %}
+                </ul>
+            </div>
+        {% else %}
+            <div class="alert alert-secondary">{% if er_solo %}{% trans "Du har endnu ikke svaret." %}{% else %}{% trans "I har endnu ikke svaret." %}{% endif %}</div>
+        {% endif %}
+
+        {% if frist_passeret %}
+        <p class="text-muted small">{% trans "Svarfristen er overskredet." %} {% if not kan_aendre_til %}{% trans "Svaret kan ikke ændres." %}{% endif %}</p>
+        {% endif %}
+
+        {% if kan_aendre_til or kan_aendre_medlem %}
+        <hr>
+        {% if frist_passeret and husstand.status == 'ja' and 'nej' in kan_aendre_til %}
+        <h5>{% trans "Meld afbud" %}</h5>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="husstand_status" value="nej">
+            <div class="mb-3">
+                <label class="form-label">{% if er_solo %}{% trans "Hvorfor kan du ikke komme alligevel?" %}{% else %}{% trans "Hvorfor kan I ikke komme alligevel?" %}{% endif %}</label>
+                {{ afbud_form.aarsag }}
+            </div>
+            <button type="submit" class="btn btn-danger">{% trans "Send afbud" %}</button>
+        </form>
+        {% endif %}
+
+        {% if kan_aendre_til %}
+        <h5 class="mt-3">{% if er_solo %}{% trans "Ændr svar:" %}{% else %}{% trans "Ændr svar for hele husstanden:" %}{% endif %}</h5>
+        <form method="post">
+            {% csrf_token %}
+            <div class="d-grid gap-2">
+                {% if 'ja' in kan_aendre_til %}<button name="husstand_status" value="ja" class="btn btn-success">✅ {% if er_solo %}{% trans "Ja, jeg kommer" %}{% else %}{% trans "Ja, vi kommer alle" %}{% endif %}</button>{% endif %}
+                {% if 'maaske' in kan_aendre_til %}<button name="husstand_status" value="maaske" class="btn btn-warning">⚠️ {% trans "Måske" %}</button>{% endif %}
+                {% if 'nej' in kan_aendre_til %}<button name="husstand_status" value="nej" class="btn btn-danger">❌ {% if er_solo %}{% trans "Nej, jeg kan ikke" %}{% else %}{% trans "Nej, vi kan ikke" %}{% endif %}</button>{% endif %}
+            </div>
+        </form>
+        {% endif %}
+
+        {% if not er_solo and kan_aendre_medlem %}
+        <h5 class="mt-3">{% trans "Eller ændr individuelle svar:" %}</h5>
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                {% for m in medlemmer %}
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" name="medlem_{{ m.id }}" id="om_{{ m.id }}"
+                           {% if m.status == 'ja' %}checked{% endif %}
+                           {% if frist_passeret and m.status == 'nej' %}disabled{% endif %}>
+                    <label class="form-check-label" for="om_{{ m.id }}">{{ m.navn }}</label>
+                </div>
+                {% endfor %}
+            </div>
+            <button type="submit" name="bekraeft_individuelt" class="btn btn-primary w-100">{% trans "Bekræft ændringer" %}</button>
+        </form>
+        {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+{% if andre_ja %}
+<div class="card shadow-sm mt-3">
+    <div class="card-body py-3 px-4">
+        <h6 class="mb-2">🎉 {% trans "Disse har sagt ja:" %}</h6>
+        <p class="mb-0 text-muted small">{{ andre_ja|join:", " }}</p>
+    </div>
+</div>
+{% endif %}
+
+{% include 'events/includes/rsvp_interaktivitet.html' %}
+{% endblock %}

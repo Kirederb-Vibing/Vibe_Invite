@@ -1,0 +1,451 @@
+{% extends 'events/base.html' %}
+{% load i18n %}
+{% block title %}{{ event.titel }} - {% trans "Overblik" %}{% endblock %}
+
+{% block extra_head %}
+<style>
+body {
+    background-color: {{ farve_baggrund }} !important;
+    background-image: {{ moenster_css }} !important;
+    background-size: 60px 60px !important;
+    min-height: 100vh;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="background: rgba(255,255,255,0.75); border-radius: 12px; padding: 1.5rem;">
+
+{% if event.aflyst %}
+<div class="alert alert-secondary mb-4">
+    <strong>❌ {% trans "Dette event er aflyst." %}</strong>
+    {% if event.aflysning_besked %}<br><span class="text-muted">{{ event.aflysning_besked }}</span>{% endif %}
+</div>
+{% endif %}
+
+<div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-2">
+    <div>
+        <h2 class="mb-0">{{ event.titel }}</h2>
+        <p class="text-muted mb-0">
+            [{{ event.dato|date:"j. F Y, H:i" }}, {{ event.sted }}]
+            {% if event.sidste_svardag %}
+            <br>{% trans "Sidste svardag" %}: {{ event.sidste_svardag|date:"j. F Y, H:i" }}
+            {% endif %}
+        </p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        {% if not event.aflyst %}
+        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#delModal">{% trans "Del invitation" %}</button>
+        <a href="{% url 'deltager_opret' event.slug %}" class="btn btn-success">+ {% trans "Tilføj deltager" %}</a>
+        <a href="{% url 'husstand_opret' event.slug %}" class="btn btn-success">+ {% trans "Tilføj husstand" %}</a>
+        <a href="{% url 'event_gaestebog_import' event.slug %}" class="btn btn-outline-primary">{% trans "Fra gæstebog" %}</a>
+        {% endif %}
+        <a href="{% url 'event_rediger' event.slug %}" class="btn btn-outline-secondary">{% trans "Redigér event" %}</a>
+        {% if er_ejer %}
+            {% if not event.aflyst %}
+            <a href="{% url 'event_aflys' event.slug %}" class="btn btn-outline-warning">{% trans "Aflys event" %}</a>
+            {% endif %}
+            <form method="post" action="{% url 'event_arkiver' event.slug %}" class="d-inline"
+                  onsubmit="return confirm('{% blocktrans with titel=event.titel %}Arkivér \'{{ titel }}\'? Det skjules fra dashboardet.{% endblocktrans %}')">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-secondary">{% trans "Arkivér" %}</button>
+            </form>
+            <a href="{% url 'event_slet' event.slug %}" class="btn btn-outline-danger">{% trans "Slet event" %}</a>
+        {% else %}
+            <a href="{% url 'event_slet' event.slug %}" class="btn btn-outline-warning">{% trans "Fjern mig som medredaktør" %}</a>
+        {% endif %}
+    </div>
+</div>
+
+<form action="{% url 'send_invitationer' event.slug %}" method="post">
+    {% csrf_token %}
+    <button class="btn btn-primary mb-4">
+        {% trans "Send invitationer" %}
+    </button>
+</form>
+
+<!-- Statistik-bokse (tæller ALLE personer, ikke husstande) -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card text-white bg-success text-center p-3">
+            <h1>{{ total_ja }}</h1>
+            <p class="mb-0">{% trans "Deltager" %}</p>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-white bg-warning text-center p-3">
+            <h1>{{ total_maaske }}</h1>
+            <p class="mb-0">{% trans "Måske" %}</p>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-white bg-danger text-center p-3">
+            <h1>{{ total_nej }}</h1>
+            <p class="mb-0">{% trans "Deltager ikke" %}</p>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-white bg-secondary text-center p-3">
+            <h1>{{ total_afventer }}</h1>
+            <p class="mb-0">{% trans "Afventer svar" %}</p>
+        </div>
+    </div>
+</div>
+
+<!-- Deltagere (solo + husstandsmedlemmer) -->
+<h5>👥 {% trans "Deltagere" %}</h5>
+<ul class="list-unstyled">
+    {% for deltager in alle_ja %}
+    <li class="mb-1 d-flex align-items-center gap-2">
+        <div class="flex-grow-1">
+            <strong>{{ deltager.navn }}</strong>
+            <small class="text-muted">
+                {% if deltager.email %}({{ deltager.email }}){% endif %}
+                {% if deltager.husstand %} ({{ deltager.husstand.navn }}){% endif %}
+            </small>
+            <span class="badge bg-success">{% trans "Ja" %}</span>
+        </div>
+        {% if not deltager.husstand %}
+        <form method="post" action="{% url 'deltager_rediger' event.slug deltager.token %}" class="d-inline">
+            {% csrf_token %}<button name="slet" class="btn btn-sm btn-outline-danger py-0 px-1" onclick="return confirm('{% blocktrans with navn=deltager.navn %}Fjern {{ navn }}?{% endblocktrans %}')">×</button>
+        </form>
+        {% endif %}
+    </li>
+    {% empty %}
+    <li class="text-muted">{% trans "Ingen endnu" %}</li>
+    {% endfor %}
+</ul>
+
+<h5>⚠️ {% trans "Måske" %}</h5>
+<ul class="list-unstyled">
+    {% for deltager in alle_maaske %}
+    <li class="mb-1 d-flex align-items-center gap-2">
+        <div class="flex-grow-1">
+            <strong>{{ deltager.navn }}</strong>
+            <small class="text-muted">
+                {% if deltager.email %}({{ deltager.email }}){% endif %}
+                {% if deltager.husstand %} ({{ deltager.husstand.navn }}){% endif %}
+            </small>
+            <span class="badge bg-warning">{% trans "Måske" %}</span>
+        </div>
+        {% if not deltager.husstand %}
+        <form method="post" action="{% url 'deltager_rediger' event.slug deltager.token %}" class="d-inline">
+            {% csrf_token %}<button name="slet" class="btn btn-sm btn-outline-danger py-0 px-1" onclick="return confirm('{% blocktrans with navn=deltager.navn %}Fjern {{ navn }}?{% endblocktrans %}')">×</button>
+        </form>
+        {% endif %}
+    </li>
+    {% empty %}
+    <li class="text-muted">{% trans "Ingen endnu" %}</li>
+    {% endfor %}
+</ul>
+
+<h5>❌ {% trans "Deltager ikke" %}</h5>
+<ul class="list-unstyled">
+    {% for deltager in alle_nej %}
+    <li class="mb-1 d-flex align-items-center gap-2">
+        <div class="flex-grow-1">
+            <strong>{{ deltager.navn }}</strong>
+            <small class="text-muted">
+                {% if deltager.email %}({{ deltager.email }}){% endif %}
+                {% if deltager.husstand %} ({{ deltager.husstand.navn }}){% endif %}
+            </small>
+            {% if deltager.afbud_aarsag %}
+            <br><small class="text-muted ms-3">{% trans "Afbud-årsag" %}: "{{ deltager.afbud_aarsag }}"</small>
+            {% endif %}
+            <span class="badge bg-danger">{% trans "Nej" %}</span>
+        </div>
+        {% if not deltager.husstand %}
+        <form method="post" action="{% url 'deltager_rediger' event.slug deltager.token %}" class="d-inline">
+            {% csrf_token %}<button name="slet" class="btn btn-sm btn-outline-danger py-0 px-1" onclick="return confirm('{% blocktrans with navn=deltager.navn %}Fjern {{ navn }}?{% endblocktrans %}')">×</button>
+        </form>
+        {% endif %}
+    </li>
+    {% empty %}
+    <li class="text-muted">{% trans "Ingen endnu" %}</li>
+    {% endfor %}
+</ul>
+
+<h5>⏳ {% trans "Afventer svar" %}</h5>
+<ul class="list-unstyled">
+    {% for deltager in alle_afventer %}
+    <li class="mb-1 d-flex align-items-center gap-2">
+        <div class="flex-grow-1">
+            <strong>{{ deltager.navn }}</strong>
+            <small class="text-muted">
+                {% if deltager.email %}({{ deltager.email }}){% endif %}
+                {% if deltager.husstand %} ({{ deltager.husstand.navn }}){% endif %}
+            </small>
+            <span class="badge bg-secondary">{% trans "Afventer" %}</span>
+        </div>
+        {% if not deltager.husstand %}
+        <form method="post" action="{% url 'deltager_rediger' event.slug deltager.token %}" class="d-inline">
+            {% csrf_token %}<button name="slet" class="btn btn-sm btn-outline-danger py-0 px-1" onclick="return confirm('{% blocktrans with navn=deltager.navn %}Fjern {{ navn }}?{% endblocktrans %}')">×</button>
+        </form>
+        {% endif %}
+    </li>
+    {% empty %}
+    <li class="text-muted">{% trans "Ingen endnu" %}</li>
+    {% endfor %}
+</ul>
+
+<!-- Husstande (kun for redigering) -->
+{% if husstande %}
+<hr>
+<h5 class="mb-3">🏠 {% blocktrans with count=husstande.count %}Husstande ({{ count }}){% endblocktrans %}</h5>
+<div class="list-group mb-4">
+    {% for h in husstande %}
+    <div class="list-group-item">
+        <div class="d-flex flex-column gap-2">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+                <div class="flex-grow-1">
+                    <strong>{{ h.navn }}</strong>
+                    <small class="text-muted d-block">
+                        {% blocktrans with n=h.antal_medlemmer %}{{ n }} medlem{% endblocktrans %}{{ h.antal_medlemmer|pluralize:"mer" }}
+                        {% for m in h.medlemmer.all %}
+                            <br>• {{ m.navn }}{% if m.email %} ({{ m.email }}){% endif %}
+                        {% endfor %}
+                    </small>
+                </div>
+                <div class="flex-shrink-0">
+                    {% if h.status == 'ja' %}
+                        <span class="badge bg-success">✅ {% trans "Ja, alle" %}</span>
+                    {% elif h.status == 'maaske' %}
+                        <span class="badge bg-warning">{% trans "Måske" %}</span>
+                    {% elif h.status == 'nej' %}
+                        <span class="badge bg-danger">❌ {% trans "Nej" %}</span>
+                    {% elif h.status == 'individuelt' %}
+                        <span class="badge bg-success">{{ h.antal_ja }} {% trans "ja" %}</span>
+                        <span class="badge bg-danger">{{ h.antal_nej }} {% trans "nej" %}</span>
+                    {% else %}
+                        <span class="badge bg-secondary">⏳ {% trans "Afventer" %}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{% url 'husstand_rediger' event.slug h.token %}" class="btn btn-sm btn-outline-secondary">{% trans "Rediger" %}</a>
+                <form method="post" action="{% url 'husstand_slet' event.slug h.token %}" class="d-inline">
+                    {% csrf_token %}<button class="btn btn-sm btn-outline-danger" onclick="return confirm('{% blocktrans with navn=h.navn %}Fjern husstanden {{ navn }}?{% endblocktrans %}')">{% trans "Fjern" %}</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Del-invitation modal -->
+<div class="modal fade" id="delModal" tabindex="-1" aria-labelledby="delModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="delModalLabel">{% trans "Del invitation" %}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted small mb-3">{% trans "Del et link som modtageren bruger til at tilmelde sig selv. Vælg hvilken type tilmelding linket skal åbne." %}</p>
+
+        <!-- Solo -->
+        <div class="mb-3">
+          <div class="fw-semibold mb-1">{% trans "Enkeltperson" %}</div>
+          <div class="input-group">
+            <input type="text" id="del-url-solo" class="form-control form-control-sm" value="{{ del_url_solo }}" readonly>
+            <button class="btn btn-sm btn-outline-secondary" type="button" onclick="kopierLink('del-url-solo', this)">{% trans "Kopiér" %}</button>
+          </div>
+          <button class="btn btn-sm btn-primary mt-2 w-100 del-share-btn"
+                  data-url="{{ del_url_solo }}"
+                  data-title="{% blocktrans with titel=event.titel %}Invitation til {{ titel }}{% endblocktrans %}"
+                  data-text="{% blocktrans with titel=event.titel %}Du er inviteret til {{ titel }}! Tilmeld dig her:{% endblocktrans %}">
+            {% trans "Del link" %}
+          </button>
+        </div>
+
+        <hr class="my-3">
+
+        <!-- Husstand -->
+        <div class="mb-1">
+          <div class="fw-semibold mb-1">{% trans "Husstand / familie" %}</div>
+          <div class="input-group">
+            <input type="text" id="del-url-husstand" class="form-control form-control-sm" value="{{ del_url_husstand }}" readonly>
+            <button class="btn btn-sm btn-outline-secondary" type="button" onclick="kopierLink('del-url-husstand', this)">{% trans "Kopiér" %}</button>
+          </div>
+          <button class="btn btn-sm btn-primary mt-2 w-100 del-share-btn"
+                  data-url="{{ del_url_husstand }}"
+                  data-title="{% blocktrans with titel=event.titel %}Invitation til {{ titel }}{% endblocktrans %}"
+                  data-text="{% blocktrans with titel=event.titel %}I er inviteret til {{ titel }}! Tilmeld jer her:{% endblocktrans %}">
+            {% trans "Del link" %}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function kopierLink(inputId, btn) {
+    const val = document.getElementById(inputId).value;
+    navigator.clipboard.writeText(val).then(function () {
+        const orig = btn.textContent;
+        btn.textContent = '{% trans "Kopieret!" %}';
+        setTimeout(function () { btn.textContent = orig; }, 2000);
+    });
+}
+
+document.querySelectorAll('.del-share-btn').forEach(function (btn) {
+    if (!navigator.share) {
+        btn.textContent = '{% trans "Kopiér link" %}';
+        btn.addEventListener('click', function () {
+            navigator.clipboard.writeText(btn.dataset.url).then(function () {
+                const orig = btn.textContent;
+                btn.textContent = '{% trans "Kopieret!" %}';
+                setTimeout(function () { btn.textContent = orig; }, 2000);
+            });
+        });
+    } else {
+        btn.addEventListener('click', function () {
+            navigator.share({
+                title: btn.dataset.title,
+                text: btn.dataset.text,
+                url: btn.dataset.url,
+            }).catch(function () {});
+        });
+    }
+});
+</script>
+
+<!-- Afstemninger -->
+<hr>
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h5 class="mb-0">📊 {% trans "Afstemninger" %}
+        {% if not event.afstemning_aktiveret %}<span class="badge bg-secondary ms-2" style="font-size:.7rem;">{% trans "Deaktiveret" %}</span>{% endif %}
+    </h5>
+</div>
+
+{% if afstemninger_admin %}
+<div class="mb-4">
+    {% for a in afstemninger_admin %}
+    <div class="card mb-3 {% if not event.afstemning_aktiveret %}opacity-50{% endif %}">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <strong>{{ a.spoergsmaal }}</strong>
+                <form method="post" action="{% url 'afstemning_slet' event.slug a.id %}" class="d-inline ms-2">
+                    {% csrf_token %}
+                    <button class="btn btn-sm btn-outline-danger py-0 px-1"
+                            onclick="return confirm('{% trans "Slet denne afstemning?" %}')">×</button>
+                </form>
+            </div>
+            {% for v in a.valg %}
+            <div class="mb-2">
+                <div class="d-flex justify-content-between small mb-1">
+                    <span>{{ v.tekst }}</span>
+                    <span class="text-muted">{% blocktrans with antal=v.antal pct=v.pct %}{{ antal }} stemme{{ antal|pluralize:"r" }} ({{ pct }}%){% endblocktrans %}</span>
+                </div>
+                <div class="progress" style="height:8px;">
+                    <div class="progress-bar bg-primary" style="width:{{ v.pct }}%"></div>
+                </div>
+                {% if v.stemmer %}
+                <div class="small text-muted mt-1">{{ v.stemmer|join:", " }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            <div class="small text-muted mt-2">{% blocktrans with total=a.total %}{{ total }} stemme{{ total|pluralize:"r" }} i alt{% endblocktrans %}</div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-muted small mb-3">{% trans "Ingen afstemninger endnu." %}</p>
+{% endif %}
+
+{% if event.afstemning_aktiveret %}
+<div class="card border-dashed mb-4" style="border-style:dashed;">
+    <div class="card-body">
+        <h6 class="mb-3">+ {% trans "Ny afstemning" %}</h6>
+        <form method="post" action="{% url 'afstemning_opret' event.slug %}" id="afstemning-form">
+            {% csrf_token %}
+            <div class="mb-3">
+                <input type="text" name="spoergsmaal" class="form-control form-control-sm"
+                       placeholder="{% trans 'Spørgsmål, fx: Hvad skal vi spise?' %}" required>
+            </div>
+            <div id="svar-liste">
+                <input type="text" name="svar" class="form-control form-control-sm mb-2" placeholder="{% trans 'Svarmulighed' %} 1" required>
+                <input type="text" name="svar" class="form-control form-control-sm mb-2" placeholder="{% trans 'Svarmulighed' %} 2" required>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-secondary mb-3" id="tilfoej-svar">+ {% trans "Tilføj svarmulighed" %}</button>
+            <br>
+            <button type="submit" class="btn btn-sm btn-primary">{% trans "Opret afstemning" %}</button>
+        </form>
+    </div>
+</div>
+<script>
+document.getElementById('tilfoej-svar')?.addEventListener('click', function() {
+    const liste = document.getElementById('svar-liste');
+    const n = liste.querySelectorAll('input').length + 1;
+    const inp = document.createElement('input');
+    inp.type = 'text';
+    inp.name = 'svar';
+    inp.className = 'form-control form-control-sm mb-2';
+    inp.placeholder = '{% trans "Svarmulighed" %} ' + n;
+    liste.appendChild(inp);
+});
+</script>
+{% endif %}
+
+<!-- Kommentarspor -->
+<hr>
+<h5 class="mb-3">💬 {% blocktrans with count=kommentarer.count %}Kommentarer ({{ count }}){% endblocktrans %}
+    {% if not event.kommentarer_aktiveret %}<span class="badge bg-secondary ms-2" style="font-size:.7rem;">{% trans "Deaktiveret" %}</span>{% endif %}
+</h5>
+{% if kommentarer %}
+<div class="mb-4 {% if not event.kommentarer_aktiveret %}opacity-50{% endif %}">
+    {% for k in kommentarer %}
+    <div class="d-flex gap-2 mb-3">
+        <div class="flex-shrink-0 rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width:36px;height:36px;font-size:.9rem;font-weight:bold;">
+            {{ k.navn|slice:":1"|upper }}
+        </div>
+        <div class="flex-grow-1">
+            <div class="bg-light rounded p-2 px-3">
+                <div class="fw-semibold small">{{ k.navn }}</div>
+                <div class="small">{{ k.tekst }}</div>
+            </div>
+            <div class="text-muted" style="font-size:.72rem;">{{ k.oprettet|date:"j. F Y, H:i" }}</div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-muted small mb-4">{% trans "Ingen kommentarer endnu." %}</p>
+{% endif %}
+
+{% if er_ejer %}
+<hr>
+<h5 class="mb-3">👥 {% trans "Medredaktører" %}</h5>
+<p class="text-muted small">{% trans "Medredaktører kan se og redigere eventet, men kan ikke slette det." %}</p>
+
+{% if event.medredaktorer.exists %}
+<ul class="list-group mb-3">
+    {% for redaktor in event.medredaktorer.all %}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+        <div>
+            <strong>{{ redaktor.get_full_name|default:redaktor.username }}</strong>
+            <small class="text-muted ms-2">{{ redaktor.email }}</small>
+        </div>
+        <form method="post" action="{% url 'medredaktor_fjern' event.slug redaktor.pk %}" class="d-inline">
+            {% csrf_token %}
+            <button class="btn btn-sm btn-outline-danger"
+                    onclick="return confirm('{% blocktrans with navn=redaktor.get_full_name|default:redaktor.username %}Fjern {{ navn }} som medredaktør?{% endblocktrans %}')">{% trans "Fjern" %}</button>
+        </form>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p class="text-muted small mb-3">{% trans "Ingen medredaktører endnu." %}</p>
+{% endif %}
+
+<form method="post" action="{% url 'medredaktor_tilfoej' event.slug %}" class="d-flex gap-2" style="max-width:420px">
+    {% csrf_token %}
+    <input type="email" name="email" class="form-control form-control-sm" placeholder="{% trans 'Email på bruger der skal tilføjes' %}" required>
+    <button type="submit" class="btn btn-sm btn-outline-primary text-nowrap">+ {% trans "Tilføj" %}</button>
+</form>
+{% endif %}
+</div>
+{% endblock %}

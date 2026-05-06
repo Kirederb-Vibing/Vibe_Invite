@@ -1,0 +1,121 @@
+{% extends 'events/base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{{ titel }} - {{ event.titel }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">{% trans "Mine events" %}</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'event_overblik' event.slug %}">{{ event.titel }}</a></li>
+                <li class="breadcrumb-item active">{{ titel }}</li>
+            </ol>
+        </nav>
+
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h2 class="mb-3">{{ titel }}</h2>
+
+                {% if er_redigering and rsvp_url %}
+                <div class="mb-3 p-3 bg-light rounded">
+                    <label class="form-label fw-bold mb-1">{% trans "Fælles invitationslink" %}</label>
+                    <div class="input-group">
+                        <input class="form-control" id="rsvp-link" type="text" value="{{ rsvp_url }}" readonly>
+                        <button class="btn btn-outline-secondary" type="button" id="kopier-knap">{% trans "Kopier" %}</button>
+                        <a href="{{ rsvp_url }}" target="_blank" class="btn btn-outline-primary">{% trans "Åbn" %}</a>
+                    </div>
+                    <div class="form-text">{% trans "Dette link sendes til alle valgte medlemmer." %}</div>
+                </div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <!-- Husstandsnavn -->
+                    <div class="mb-3">
+                        <label class="form-label" for="id_navn">{% trans "Husstandens navn" %}</label>
+                        {{ form.navn }}
+                        {% if form.navn.errors %}
+                            <div class="text-danger small">{{ form.navn.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">{{ form.navn.help_text }}</div>
+                    </div>
+
+                    <!-- Token -->
+                    <div class="mb-3">
+                        <label class="form-label" for="id_token">{% trans "Token (del af linket)" %}</label>
+                        {{ form.token }}
+                        <div class="form-text">
+                            {{ form.token.help_text }}
+                            {% if er_redigering %}
+                                <br><strong>⚠️ {% trans "Advarsel:" %}</strong> {% trans "Hvis du ændrer token, vil det gamle link stoppe med at virke." %}
+                            {% endif %}
+                        </div>
+                        {% if form.token.errors %}
+                            <div class="text-danger small">{{ form.token.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Medlemmer -->
+                    <h5 class="mt-4">{% trans "Medlemmer" %}</h5>
+                    <p class="text-muted small">{% trans "Tildel email og vælg om invitationen skal sendes til medlemmet." %}</p>
+                    <div id="medlem-felter">
+                        {% for navn, email, send_flag in medlemmer %}
+                        <div class="border rounded p-2 mb-2 bg-light medlem-raekke">
+                            <div class="d-flex gap-2 align-items-center mb-1">
+                                <input name="medlem_navn[]" type="text" class="form-control form-control-sm" placeholder="{% trans 'Navn' %}" value="{{ navn }}">
+                                <button type="button" class="btn btn-sm btn-outline-danger fjern-knap flex-shrink-0">×</button>
+                            </div>
+                            <div class="d-flex gap-2 align-items-center">
+                                <input name="medlem_email[]" type="email" class="form-control form-control-sm" placeholder="{% trans 'Email (valgfrit)' %}" value="{{ email|default_if_none:'' }}">
+                                <div class="d-flex align-items-center gap-1 flex-shrink-0">
+                                    <input name="medlem_send_invitation[{{ forloop.counter0 }}]" type="checkbox" value="1" class="form-check-input mt-0" {% if send_flag %}checked{% endif %}>
+                                    <small class="text-muted">{% trans "Send" %}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="border rounded p-2 mb-2 bg-light medlem-raekke">
+                            <div class="d-flex gap-2 align-items-center mb-1">
+                                <input name="medlem_navn[]" type="text" class="form-control form-control-sm" placeholder="{% trans 'Navn' %}">
+                                <button type="button" class="btn btn-sm btn-outline-danger fjern-knap flex-shrink-0">×</button>
+                            </div>
+                            <div class="d-flex gap-2 align-items-center">
+                                <input name="член_email[]" type="email" class="form-control form-control-sm" placeholder="{% trans 'Email (valgfrit)' %}">
+                                <div class="d-flex align-items-center gap-1 flex-shrink-0">
+                                    <input name="član_send_invitation[]" type="checkbox" value="1" class="form-check-input mt-0" checked>
+                                    <small class="text-muted">{% trans "Send" %}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <button type="button" id="tilfoej-medlem" class="btn btn-sm btn-outline-secondary">+ {% trans "Tilføj medlem" %}</button>
+
+                    <!-- Submit-knapper -->
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">{% trans "Gem" %}</button>
+                        <a href="{% url 'event_overblik' event.slug %}" class="btn btn-outline-secondary">{% trans "Annuller" %}</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    input[type=text], input[type=email] {
+        display: block;
+        width: 100%;
+        padding: .375rem .75rem;
+        border: 1px solid #ced4da;
+        border-radius: .375rem;
+    }
+</style>
+
+<script src="{% static 'events/js/slug_preview.js' %}"></script>
+<script src="{% static 'events/js/husstand_form.js' %}"></script>
+{% endblock %}

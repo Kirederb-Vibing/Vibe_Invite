@@ -1,0 +1,18 @@
+{% extends 'events/rsvp_base.html' %}
+{% load i18n %}
+{% block title %}{{ event.titel }} – RSVP{% endblock %}
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body p-4">
+        <p class="mb-3">{% blocktrans with navn=invitation.navn %}Hej <strong>{{ navn }}</strong>, deltager du?{% endblocktrans %}</p>
+        <form method="post">
+            {% csrf_token %}
+            <div class="d-grid gap-2">
+                <button name="status" value="ja" class="btn btn-success btn-lg">✅ {% trans "Ja, jeg kommer" %}</button>
+                <button name="status" value="maaske" class="btn btn-warning btn-lg">🤔 {% trans "Måske" %}</button>
+                <button name="status" value="nej" class="btn btn-danger btn-lg">❌ {% trans "Nej, jeg kan ikke" %}</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

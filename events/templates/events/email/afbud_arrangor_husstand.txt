@@ -1,0 +1,23 @@
+{% load i18n %}{% trans "Hej" %} {{ arrangor.first_name|default:arrangor.username }},
+
+{% blocktrans with husstand=husstand.navn titel=event.titel %}Husstanden "{{ husstand }}" har ændret deres svar til "{{ titel }}".{% endblocktrans %}
+{% trans "Ny status:" %} {{ husstand.get_status_display }}
+{% if husstand.afbud_aarsag %}
+{% trans "Angivet årsag:" %}
+"{{ husstand.afbud_aarsag }}"
+{% endif %}
+
+— {% trans "Opdateret overblik" %} —
+
+{% trans "Deltager" %} ({{ ja_liste|length }}):
+{% for navn in ja_liste %}  • {{ navn }}
+{% empty %}  ({% trans "ingen" %})
+{% endfor %}
+
+{% trans "Måske" %} ({{ maaske_liste|length }}):
+{% for navn in maaske_liste %}  • {{ navn }}
+{% empty %}  ({% trans "ingen" %})
+{% endfor %}
+
+{% trans "Se overblikket her:" %}
+{{ overblik_url }}

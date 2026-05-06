@@ -1,0 +1,22 @@
+{
+    # Email used for Let's Encrypt certificate registration
+    email {$ACME_EMAIL}
+}
+
+{$DOMAIN} {
+    # Serve static and media files directly — faster than going through Django/Gunicorn
+    handle_path /static/* {
+        root * /srv/staticfiles
+        file_server
+    }
+
+    handle_path /media/* {
+        root * /srv/media
+        file_server
+    }
+
+    # Everything else goes to the Django application
+    handle {
+        reverse_proxy vibe_invite_web:8000
+    }
+}

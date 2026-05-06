@@ -1,0 +1,29 @@
+{% extends 'events/base.html' %}
+{% load i18n %}
+{% block title %}{% blocktrans with navn=kontakt.navn %}Slet {{ navn }}{% endblocktrans %}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'gaestebog' %}">{% trans "Gæstebog" %}</a></li>
+                <li class="breadcrumb-item active">{% blocktrans with navn=kontakt.navn %}Slet {{ navn }}{% endblocktrans %}</li>
+            </ol>
+        </nav>
+        <div class="card shadow-sm border-danger">
+            <div class="card-body p-4">
+                <h2 class="text-danger mb-3">{% blocktrans with navn=kontakt.navn %}Slet "{{ navn }}"?{% endblocktrans %}</h2>
+                <p>{% blocktrans with navn=kontakt.navn email=kontakt.email %}Er du sikker på at du vil fjerne <strong>{{ navn }}</strong> ({{ email }}) fra din gæstebog?{% endblocktrans %}</p>
+                <p class="text-muted small">{% trans "Handlingen kan ikke fortrydes." %}</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-danger">{% trans "Ja, slet" %}</button>
+                        <a href="{% url 'gaestebog' %}" class="btn btn-outline-secondary">{% trans "Annuller" %}</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

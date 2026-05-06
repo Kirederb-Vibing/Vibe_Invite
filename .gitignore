@@ -1,0 +1,14 @@
+venv/
+db.sqlite3
+.env
+!.env.example
+staticfiles/
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+media/
+logs/
+*.log
+backup_*.sql
+nginx/certs/

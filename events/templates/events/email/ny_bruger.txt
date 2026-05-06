@@ -1,0 +1,11 @@
+{% load i18n %}{% trans "En ny bruger har anmodet om adgang til Vibe Invite." %}
+
+{% trans "Navn:" %}        {{ full_name }}
+{% trans "Brugernavn:" %}  {{ username }}
+{% trans "Email:" %}       {{ email }}
+
+{% trans "Accepter brugeren (link er gyldigt i 7 dage):" %}
+{{ accepter_url }}
+
+{% trans "Afvis brugeren:" %}
+{{ afvis_url }}

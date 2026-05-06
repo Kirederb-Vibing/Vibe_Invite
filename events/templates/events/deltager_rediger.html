@@ -1,0 +1,110 @@
+{% extends 'events/base.html' %}
+{% load i18n %}
+{% load static %}
+{% block title %}{% blocktrans with navn=invitation.navn %}Redigér {{ navn }}{% endblocktrans %}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">{% trans "Mine events" %}</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'event_overblik' event.slug %}">{{ event.titel }}</a></li>
+                <li class="breadcrumb-item active">{{ invitation.navn }}</li>
+            </ol>
+        </nav>
+
+        <div class="card shadow-sm mb-3">
+            <div class="card-body p-4">
+                <h2 class="mb-3">{{ invitation.navn }}</h2>
+
+                <div class="mb-3">
+                    <span class="badge
+                        {% if invitation.status == 'ja' %}bg-success
+                        {% elif invitation.status == 'maaske' %}bg-warning
+                        {% elif invitation.status == 'nej' %}bg-danger
+                        {% else %}bg-secondary{% endif %}">
+                        {% trans "Status" %}: {{ invitation.get_status_display }}
+                    </span>
+                    {% if invitation.svar_opdateret %}
+                        <small class="text-muted ms-2">
+                            {% trans "Svar opdateret" %} {{ invitation.svar_opdateret|date:"j. F Y, H:i" }}
+                        </small>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3 p-3 bg-light rounded">
+                    <label class="form-label fw-bold mb-1">{% trans "Invitationslink" %}</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="rsvp-link" value="{{ rsvp_url }}" readonly>
+                        <button class="btn btn-outline-secondary" type="button" id="kopier-knap">{% trans "Kopiér" %}</button>
+                        <a href="{{ rsvp_url }}" target="_blank" class="btn btn-outline-secondary">{% trans "Åbn" %}</a>
+                    </div>
+                    <div class="form-text">{% trans "Dette er det unikke link gæsten bruger til at svare." %}</div>
+                </div>
+
+                {% if invitation.afbud_aarsag %}
+                    <div class="alert alert-warning">
+                        <strong>{% trans "Afbud-årsag:" %}</strong><br>
+                        "{{ invitation.afbud_aarsag }}"
+                    </div>
+                {% endif %}
+
+                <hr>
+
+                <h5 class="mb-3">{% trans "Redigér oplysninger" %}</h5>
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label" for="id_navn">{% trans "Navn" %}</label>
+                        {{ form.navn }}
+                        {% if form.navn.errors %}<div class="text-danger small">{{ form.navn.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="id_email">{% trans "Email" %}</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}<div class="text-danger small">{{ form.email.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="id_token">{% trans "Token (del af link)" %}</label>
+                        {{ form.token }}
+                        <div class="form-text">
+                            ⚠️ {% trans "Hvis du ændrer token, virker det gamle link ikke længere." %}
+                        </div>
+                        {% if form.token.errors %}<div class="text-danger small">{{ form.token.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button type="submit" class="btn btn-primary">{% trans "Gem ændringer" %}</button>
+                        <a href="{% url 'event_overblik' event.slug %}" class="btn btn-outline-secondary">{% trans "Annullér" %}</a>
+                        <button type="submit" name="slet" value="1" class="btn btn-outline-danger ms-auto"
+                                onclick="return confirm('{% blocktrans with navn=invitation.navn %}Er du sikker på du vil fjerne {{ navn }} fra gæstelisten?{% endblocktrans %}');">
+                            🗑 {% trans "Slet gæst" %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var knap = document.getElementById('kopier-knap');
+    var linkFelt = document.getElementById('rsvp-link');
+    if (knap && linkFelt) {
+        knap.addEventListener('click', function () {
+            linkFelt.select();
+            linkFelt.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(linkFelt.value).then(function () {
+                var oprindelig = knap.textContent;
+                knap.textContent = '✓ {% trans "Kopieret" %}';
+                setTimeout(function () { knap.textContent = oprindelig; }, 1500);
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

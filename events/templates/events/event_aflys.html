@@ -1,0 +1,29 @@
+{% extends 'events/base.html' %}
+{% load i18n %}
+{% block title %}{% blocktrans with titel=event.titel %}Aflys {{ titel }}{% endblocktrans %}{% endblock %}
+{% block content %}
+<div class="card shadow-sm" style="max-width: 560px; margin: 0 auto;">
+    <div class="card-body p-4">
+        <h4 class="mb-1">{% trans "Aflys event" %}</h4>
+        <p class="text-muted mb-4">{{ event.titel }} · {{ event.dato|date:"j. F Y" }}</p>
+
+        <div class="alert alert-warning">
+            <strong>{% trans "Advarsel:" %}</strong> {% trans "Alle gæster med en email-adresse modtager en aflysningsmail. Handlingen kan ikke fortrydes." %}
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">{% trans "Besked til gæsterne" %} <span class="text-muted">({% trans "valgfri" %})</span></label>
+                <textarea name="aflysning_besked" class="form-control" rows="4"
+                    placeholder="{% trans "F.eks. 'Vi aflyser desværre pga. sygdom. Vi håber at kunne holde eventet på et andet tidspunkt.'" %}"></textarea>
+                <div class="form-text">{% trans "Vises i mailen og på gæsternes RSVP-side." %}</div>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-danger">{% trans "Send aflysning til alle gæster" %}</button>
+                <a href="{% url 'event_overblik' event.slug %}" class="btn btn-outline-secondary">{% trans "Fortryd" %}</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

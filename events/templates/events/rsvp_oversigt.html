@@ -1,0 +1,68 @@
+{% extends 'events/rsvp_base.html' %}
+{% load i18n %}
+{% block title %}{{ event.titel }} – {% trans "Dit svar" %}{% endblock %}
+{% block content %}
+{% if event.aflyst %}
+<div class="alert alert-secondary mb-3">
+    <strong>❌ {% trans "Dette event er desværre aflyst." %}</strong>
+    {% if event.aflysning_besked %}<br>{{ event.aflysning_besked }}{% endif %}
+</div>
+{% endif %}
+<div class="card shadow-sm mb-3">
+    <div class="card-body p-4">
+        <p>{% blocktrans with navn=invitation.navn %}Hej <strong>{{ navn }}</strong>,{% endblocktrans %}</p>
+
+        {% if invitation.status == 'ja' %}
+            <div class="alert alert-success">✅ {% trans "Du har svaret" %} <strong>{% trans "Ja, jeg kommer" %}</strong>.</div>
+        {% elif invitation.status == 'maaske' %}
+            <div class="alert alert-warning">🤔 {% trans "Du har svaret" %} <strong>{% trans "Måske" %}</strong>.</div>
+        {% elif invitation.status == 'nej' %}
+            <div class="alert alert-danger">❌ {% trans "Du har svaret" %} <strong>{% trans "Nej, jeg kan ikke" %}</strong>.</div>
+        {% endif %}
+
+        {% if frist_passeret %}
+        <p class="text-muted small">
+            {% blocktrans with dato=event.sidste_svardag|date:"j. F Y" %}Svarfristen ({{ dato }}) er overskredet.{% endblocktrans %}
+            {% if kan_aendre_til %}{% trans "Du kan stadig melde afbud, men skal angive en årsag." %}{% else %}{% trans "Dit svar kan ikke længere ændres." %}{% endif %}
+        </p>
+        {% endif %}
+
+        {% if kan_aendre_til %}
+        <hr>
+        {% if frist_passeret and invitation.status == 'ja' %}
+        <h5>{% trans "Meld afbud" %}</h5>
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">{% trans "Hvorfor kan du ikke komme alligevel?" %}</label>
+                {{ afbud_form.aarsag }}
+                {% if afbud_form.aarsag.errors %}<div class="text-danger small">{{ afbud_form.aarsag.errors }}</div>{% endif %}
+            </div>
+            <button type="submit" name="status" value="nej" class="btn btn-danger">❌ {% trans "Send afbud" %}</button>
+        </form>
+        {% else %}
+        <h5>{% trans "Ændre svar" %}</h5>
+        <form method="post">
+            {% csrf_token %}
+            <div class="d-grid gap-2">
+                {% if 'ja' in kan_aendre_til %}<button name="status" value="ja" class="btn btn-success">✅ {% trans "Ja, jeg kommer" %}</button>{% endif %}
+                {% if 'maaske' in kan_aendre_til %}<button name="status" value="maaske" class="btn btn-warning">🤔 {% trans "Måske" %}</button>{% endif %}
+                {% if 'nej' in kan_aendre_til %}<button name="status" value="nej" class="btn btn-danger">❌ {% trans "Nej, jeg kan ikke" %}</button>{% endif %}
+            </div>
+        </form>
+        {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+{% if andre_ja %}
+<div class="card shadow-sm mt-3">
+    <div class="card-body py-3 px-4">
+        <h6 class="mb-2">🎉 {% trans "Disse har sagt ja:" %}</h6>
+        <p class="mb-0 text-muted small">{{ andre_ja|join:", " }}</p>
+    </div>
+</div>
+{% endif %}
+
+{% include 'events/includes/rsvp_interaktivitet.html' %}
+{% endblock %}

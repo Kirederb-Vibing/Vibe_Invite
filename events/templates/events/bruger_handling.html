@@ -1,0 +1,19 @@
+{% extends 'events/base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Brugeranmodning" %}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6 text-center py-5">
+    {% if handling == 'accepteret' %}
+      <div class="display-1 mb-3">✅</div>
+      <h2>{% trans "Bruger aktiveret" %}</h2>
+      <p class="text-muted">{% blocktrans with navn=bruger.get_full_name|default:bruger.username email=bruger.email %}{{ navn }} ({{ email }}) har fået adgang og er notificeret pr. email.{% endblocktrans %}</p>
+    {% else %}
+      <div class="display-1 mb-3">🚫</div>
+      <h2>{% trans "Bruger afvist" %}</h2>
+      <p class="text-muted">{% blocktrans %}{{ navn }} er notificeret og kontoen er slettet.{% endblocktrans %}</p>
+    {% endif %}
+    <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary mt-3">{% trans "Gå til dashboard" %}</a>
+  </div>
+</div>
+{% endblock %}

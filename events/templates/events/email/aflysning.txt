@@ -1,0 +1,10 @@
+{% load i18n %}{% blocktrans with navn=navn %}Hej {{ navn }},{% endblocktrans %}
+
+{% blocktrans with titel=event.titel dato=event.dato|date:"j. F Y" sted=event.sted %}Desværre er {{ titel }} den {{ dato }} i {{ sted }} blevet aflyst.{% endblocktrans %}
+
+{% if event.aflysning_besked %}{% trans "Besked fra arrangøren:" %}
+"{{ event.aflysning_besked }}"
+
+{% endif %}{% trans "Vi håber at ses en anden gang. Undskyld for ulejligheden." %}
+
+– {% trans "Vibe Invite" %}

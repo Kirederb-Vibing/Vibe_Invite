@@ -1,0 +1,14 @@
+.git
+.env
+venv/
+*.pyc
+__pycache__/
+.DS_Store
+media/
+staticfiles/
+logs/
+.github/
+*.md
+nginx/certs/
+db.sqlite3
+backup_*.sql

@@ -1,0 +1,576 @@
+{% extends 'events/base.html' %}
+{% load i18n %}
+{% load static %}
+{% block title %}{{ titel }}{% endblock %}
+{% block extra_head %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" rel="stylesheet">
+{% endblock %}
+{% block content %}
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h2 class="mb-3">{{ titel }}</h2>
+
+                    {% for field in form %}
+                        {% if field.html_name not in 'tema,baggrundsbillede,oenskeliste_url,farve_baggrund,farve_moenster,reminder_dage_foer,reminder_interval,kommentarer_aktiveret,afstemning_aktiveret' %}
+                        <div class="mb-3">
+                            <label class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <div class="form-text">{{ field.help_text }}</div>
+                            {% endif %}
+                            {% if field.errors %}
+                                <div class="text-danger small">{{ field.errors }}</div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+
+                    <hr class="my-4">
+                    <h5>{% trans "Personalisering" %}</h5>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">{% trans "Tema" %}</label>
+                        <div class="row g-2">
+                            {% for tema_key, tema_info in tema_data.items %}
+                            <div class="col-6 col-md-3">
+                                <label class="d-block border rounded p-2 text-center tema-kort" style="cursor:pointer"
+                                       data-tema="{{ tema_key }}">
+                                    <input type="radio" name="tema" value="{{ tema_key }}" class="d-none tema-radio"
+                                           {% if form.tema.value == tema_key %}checked{% elif not form.tema.value and tema_key == 'standard' %}checked{% endif %}>
+                                    <div style="font-size:1.8rem">{{ tema_info.ikon }}</div>
+                                    <small class="d-block mt-1">{{ tema_info.label }}</small>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">{% trans "Baggrundsbillede (valgfrit)" %}</label>
+                        {% if form.instance.baggrundsbillede %}
+                        <div class="mb-2 d-flex align-items-center gap-3">
+                            <img src="{{ form.instance.baggrundsbillede.url }}" alt="{% trans 'Nuværende billede' %}"
+                                 style="height:60px;border-radius:6px;object-fit:cover;max-width:160px;">
+                            <label class="form-check-label d-flex align-items-center gap-2 text-danger" style="cursor:pointer">
+                                <input type="checkbox" name="baggrundsbillede-clear" id="baggrundsbillede-clear-id" class="form-check-input">
+                                {% trans "Fjern billede" %}
+                            </label>
+                        </div>
+                        {% endif %}
+                        {{ form.baggrundsbillede }}
+                        <img id="crop-thumbnail" src="" alt="{% trans 'Valgt billede' %}"
+                             style="display:none;height:60px;border-radius:6px;object-fit:cover;max-width:160px;margin-top:8px;">
+                        <div class="form-text">{{ form.baggrundsbillede.help_text }} {% trans "Når du vælger et billede, kan du beskære det." %}</div>
+                        {% if form.baggrundsbillede.errors %}<div class="text-danger small">{{ form.baggrundsbillede.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">{% trans "Farver" %}</label>
+                        <div class="d-flex gap-4 align-items-start flex-wrap">
+                            <div>
+                                <label class="form-text d-block mb-1">{% trans "Baggrundsfarve" %}</label>
+                                {{ form.farve_baggrund }}
+                            </div>
+                            <div>
+                                <label class="form-text d-block mb-1">{% trans "Mønsterfarve" %} <span class="text-muted">({% trans "tom = tema-standard" %})</span></label>
+                                <div class="d-flex align-items-center gap-2">
+                                    {{ form.farve_moenster }}
+                                    <button type="button" id="nulstil-moenster" class="btn btn-sm btn-outline-secondary">{% trans "Nulstil" %}</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="farve-preview" class="mt-3 rounded p-3 d-flex align-items-center justify-content-center" style="min-height:80px;background-size:60px 60px;">
+                            <span class="text-muted small">{% trans "Forhåndsvisning af mønster" %}</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">{% trans "Ønskeliste-link (valgfrit)" %}</label>
+                        {{ form.oenskeliste_url }}
+                        {% if form.oenskeliste_url.errors %}<div class="text-danger small">{{ form.oenskeliste_url.errors }}</div>{% endif %}
+                        <div class="form-text">{{ form.oenskeliste_url.help_text }}</div>
+                    </div>
+
+                    <hr class="my-4">
+                    <h5>{% trans "Reminders til \"måske\"-gæster" %}</h5>
+                    <p class="text-muted small">{% trans "Hvis en gæst har svaret \"måske\", kan systemet automatisk sende dem en reminder-mail. Gæster der ikke svarer inden sidste svardag, sættes automatisk til \"deltager ikke\"." %}</p>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">{{ form.reminder_dage_foer.label }}</label>
+                        <div class="input-group" style="max-width:260px;">
+                            {{ form.reminder_dage_foer }}
+                            <span class="input-group-text">{% trans "dage før eventet" %}</span>
+                        </div>
+                        <div class="form-text">{% trans "Lad feltet stå tomt for ingen reminder." %}</div>
+                        {% if form.reminder_dage_foer.errors %}<div class="text-danger small">{{ form.reminder_dage_foer.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">{{ form.reminder_interval.label }}</label>
+                        {{ form.reminder_interval }}
+                        <div class="form-text">{% trans "Vælges kun hvis der er sat en første reminder ovenfor." %}</div>
+                        {% if form.reminder_interval.errors %}<div class="text-danger small">{{ form.reminder_interval.errors }}</div>{% endif %}
+                    </div>
+
+                    <hr class="my-4">
+                    <h5>{% trans "Interaktivitet på RSVP-siden" %}</h5>
+                    <p class="text-muted small">{% trans "Bestem om gæster kan skrive kommentarer og deltage i afstemninger. Deaktivering skjuler ikke eksisterende indhold — det vises blot grået ud uden mulighed for interaktion." %}</p>
+
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            {{ form.kommentarer_aktiveret }}
+                            <label class="form-check-label" for="{{ form.kommentarer_aktiveret.id_for_label }}">
+                                <span class="fw-semibold">{% trans "Kommentarspor" %}</span>
+                                <span class="text-muted fw-normal"> — {% trans "gæster kan skrive beskeder til hinanden" %}</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            {{ form.afstemning_aktiveret }}
+                            <label class="form-check-label" for="{{ form.afstemning_aktiveret.id_for_label }}">
+                                <span class="fw-semibold">{% trans "Afstemning" %}</span>
+                                <span class="text-muted fw-normal"> — {% trans "gæster kan stemme på spørgsmål du opretter" %}</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if is_new and kontakter or is_new and husstande %}
+    <hr class="my-4">
+    <h4 class="mb-1">{% trans "Invitér gæster" %} <span class="text-muted fw-normal fs-6">({% trans "valgfrit" %})</span></h4>
+    <p class="text-muted mb-3">{% trans "Vælg hvem der skal inviteres med det samme. Du kan altid tilføje flere bagefter." %}</p>
+
+    {% if alle_tags %}
+    <div class="mb-3">
+        <span class="text-muted small me-2">{% trans "Filtrer efter tag:" %}</span>
+        {% for tag in alle_tags %}
+        <button type="button" class="btn btn-sm btn-outline-secondary me-1 mb-1 tag-filter-chip" data-tag="{{ tag }}">{{ tag }}</button>
+        {% endfor %}
+        <button type="button" class="btn btn-sm btn-link ms-1 mb-1 d-none" id="ryd-tag-filter">{% trans "Ryd filter" %}</button>
+    </div>
+    {% endif %}
+
+    <div class="row g-4">
+        <!-- Solo kontakter -->
+        <div class="col-md-6">
+            <h6>{% trans "Solo kontakter" %} <span class="badge bg-secondary ms-1" id="kontakt-taeller">{{ kontakter|length }}</span></h6>
+            {% if kontakter %}
+            <div class="mb-2">
+                <button type="button" class="btn btn-link btn-sm p-0" id="vael-alle-kontakter">{% trans "Vælg alle" %}</button>
+                /
+                <button type="button" class="btn btn-link btn-sm p-0" id="fravael-alle-kontakter">{% trans "Fravælg alle" %}</button>
+            </div>
+            {% regroup kontakter by navn|slice:":1" as kontakt_grupper %}
+            {% for gruppe in kontakt_grupper %}
+                <div class="text-muted small fw-bold mt-2 mb-1 ps-1">{{ gruppe.grouper|upper }}</div>
+                {% for kontakt in gruppe.list %}
+                <div class="card mb-1 shadow-sm kontakt-kort"
+                     data-tags="{{ kontakt.tags }}">
+                    <div class="card-body py-2 px-3">
+                        <div class="form-check d-flex align-items-center gap-2">
+                            <input class="form-check-input solo-check" type="checkbox"
+                                   name="kontakt" value="{{ kontakt.pk }}"
+                                   id="ef_kontakt_{{ kontakt.pk }}">
+                            <label class="form-check-label flex-grow-1" for="ef_kontakt_{{ kontakt.pk }}">
+                                <span class="fw-semibold">{{ kontakt.navn }}</span>
+                                <small class="text-muted ms-1">{{ kontakt.email }}</small>
+                                {% for tag in kontakt.tags_liste %}
+                                    <span class="badge bg-secondary ms-1 tag-badge">{{ tag }}</span>
+                                {% endfor %}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% endfor %}
+            {% else %}
+            <p class="text-muted small">{% trans "Ingen solo kontakter i gæstebogen." %}</p>
+            {% endif %}
+        </div>
+
+        <!-- Husstande -->
+        <div class="col-md-6">
+            <h6>{% trans "Husstande" %} <span class="badge bg-secondary ms-1" id="husstand-taeller">{{ husstande|length }}</span></h6>
+            <p class="text-muted small mb-2">{% trans "Afkryds husstand for hele husstanden som én, eller afkryds enkeltmedlemmer for solo-invitationer." %}</p>
+            {% if husstande %}
+            {% regroup husstande by navn|slice:":1" as husstand_grupper %}
+            {% for gruppe in husstand_grupper %}
+                <div class="text-muted small fw-bold mt-2 mb-1 ps-1">{{ gruppe.grouper|upper }}</div>
+                {% for h in gruppe.list %}
+                <div class="card mb-1 shadow-sm husstand-kort"
+                     data-tags="{{ h.tags }}">
+                    <div class="card-body py-2 px-3">
+                        <div class="form-check d-flex align-items-center gap-2">
+                            <input class="form-check-input husstand-check" type="checkbox"
+                                   name="husstand" value="{{ h.pk }}"
+                                   id="ef_husstand_{{ h.pk }}"
+                                   data-husstand-id="{{ h.pk }}">
+                            <label class="form-check-label fw-semibold flex-grow-1" for="ef_husstand_{{ h.pk }}">
+                                {{ h.navn }}
+                                <small class="text-muted fw-normal ms-1">({{ h.antal_medlemmer }} {% trans "medl." %})</small>
+                                {% for tag in h.tags_liste %}
+                                    <span class="badge bg-secondary ms-1 tag-badge">{{ tag }}</span>
+                                {% endfor %}
+                            </label>
+                        </div>
+                        {% for m in h.medlemmer.all %}
+                        <div class="ms-4 d-flex align-items-center gap-2 border-top mt-1 pt-1">
+                            <div class="form-check d-flex align-items-center gap-2 flex-grow-1">
+                                <input class="form-check-input husstand-{{ h.pk }}-medl" type="checkbox"
+                                       name="husstand_medlem" value="{{ m.pk }}"
+                                       id="ef_medl_{{ m.pk }}"
+                                       {% if not m.email %}disabled title="{% trans 'Ingen email – kan ikke inviteres separat' %}"{% endif %}>
+                                <label class="form-check-label small {% if not m.email %}text-muted{% endif %}" for="ef_medl_{{ m.pk }}">
+                                    {{ m.navn }}
+                                    {% if m.email %}
+                                        <span class="text-muted">{{ m.email }}</span>
+                                    {% else %}
+                                        <span class="text-muted">({% trans "ingen email" %})</span>
+                                    {% endif %}
+                                </label>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% endfor %}
+            {% else %}
+            <p class="text-muted small">{% trans "Ingen husstande i gæstebogen." %}</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-8">
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">{% trans "Gem" %}</button>
+                <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">{% trans "Annullér" %}</a>
+            </div>
+        </div>
+    </div>
+
+</form>
+
+<!-- Beskær-modal (uden for form for at undgå nested form-problemer) -->
+<div class="modal fade" id="crop-modal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{% trans "Beskær baggrundsbillede" %}</h5>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <!-- Cropper -->
+                    <div class="col-lg-7">
+                        <div style="max-height:420px;overflow:hidden;background:#222;border-radius:6px;">
+                            <img id="crop-img" src="" style="display:block;max-width:100%;">
+                        </div>
+                        <p class="text-muted small mt-2 mb-0">{% trans "Træk for at flytte · Scroll/knib for at zoome" %}</p>
+                    </div>
+                    <!-- Previews -->
+                    <div class="col-lg-5">
+                        <p class="fw-semibold mb-2">{% trans "Forhåndsvisning på forskellige skærme" %}</p>
+                        <div class="mb-3">
+                            <div class="small text-muted mb-1">📱 {% trans "Mobil" %}</div>
+                            <div class="crop-preview-box overflow-hidden rounded"
+                                 style="width:100%;height:72px;border:1px solid #dee2e6;"></div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="small text-muted mb-1">📟 {% trans "Tablet" %}</div>
+                            <div class="crop-preview-box overflow-hidden rounded"
+                                 style="width:100%;height:104px;border:1px solid #dee2e6;"></div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="small text-muted mb-1">🖥️ {% trans "Desktop" %}</div>
+                            <div class="crop-preview-box overflow-hidden rounded"
+                                 style="width:100%;height:136px;border:1px solid #dee2e6;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" id="crop-cancel">{% trans "Annullér" %}</button>
+                <button type="button" class="btn btn-primary" id="crop-confirm">{% trans "Brug dette udsnit" %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    input[type=text], input[type=email], input[type=datetime-local], textarea, select {
+        display: block; width: 100%; max-width: 100%; box-sizing: border-box;
+        padding: .375rem .75rem; border: 1px solid #ced4da;
+        border-radius: .375rem;
+    }
+    select[multiple] { min-height: 120px; }
+    .husstand-kort.dimmet, .kontakt-kort.dimmet { opacity: 0.3; pointer-events: none; }
+</style>
+
+<script src="{% static 'events/js/slug_preview.js' %}"></script>
+<script>
+// Tema-kort vælger
+document.querySelectorAll('.tema-kort').forEach(function(kort) {
+    kort.addEventListener('click', function() {
+        document.querySelectorAll('.tema-kort').forEach(k => {
+            k.style.borderColor = '';
+            k.style.background = '';
+        });
+        this.style.borderColor = '#0d6efd';
+        this.style.background = '#e8f0ff';
+        this.querySelector('.tema-radio').checked = true;
+    });
+    if (kort.querySelector('.tema-radio').checked) {
+        kort.style.borderColor = '#0d6efd';
+        kort.style.background = '#e8f0ff';
+    }
+});
+
+// Farve-preview og nulstil
+(function() {
+    const bgInput = document.getElementById('id_farve_baggrund');
+    const moInput = document.getElementById('id_farve_moenster');
+    const preview = document.getElementById('farve-preview');
+    const nulstil = document.getElementById('nulstil-moenster');
+    const temaDefaultFarver = {
+        {% for k, v in tema_data.items %}'{{ k }}': '{{ v.farve_fra }}',{% endfor %}
+    };
+
+    function getAktivTema() {
+        const checked = document.querySelector('.tema-radio:checked');
+        return checked ? checked.value : 'standard';
+    }
+
+    function opdaterPreview() {
+        if (!preview) return;
+        const bg = bgInput ? bgInput.value : '#ffffff';
+        let mo = moInput ? moInput.value : '';
+        if (!mo || mo === '#000000') mo = temaDefaultFarver[getAktivTema()] || '#4361ee';
+        // Byg SVG inline for preview
+        const svg = buildSVG(getAktivTema(), mo);
+        preview.style.backgroundColor = bg;
+        preview.style.backgroundImage = 'url("data:image/svg+xml,' + encodeURIComponent(svg) + '")';
+    }
+
+    function buildSVG(tema, c) {
+        const monstre = {
+            standard: `<circle cx="15" cy="15" r="4" fill="${c}"/><circle cx="45" cy="45" r="4" fill="${c}"/><circle cx="45" cy="15" r="2.5" fill="${c}"/><circle cx="15" cy="45" r="2.5" fill="${c}"/>`,
+            foedselsdag: `<ellipse cx="30" cy="21" rx="10" ry="13" fill="${c}"/><circle cx="30" cy="34" r="2" fill="${c}"/><path d="M30 36 Q27 44 26 52" stroke="${c}" stroke-width="2" fill="none" stroke-linecap="round"/>`,
+            fest: `<polygon points="30,12 33,23 45,23 36,30 39,42 30,35 21,42 24,30 15,23 27,23" fill="${c}"/>`,
+            barnedag: `<rect x="27" y="13" width="6" height="34" rx="3" fill="${c}"/><rect x="13" y="23" width="34" height="6" rx="3" fill="${c}"/>`,
+            bryllup: `<path d="M30 40 C20 31 13 25 13 19 C13 14 17 11 21 11 C25 11 28 14 30 17 C32 14 35 11 39 11 C43 11 47 14 47 19 C47 25 40 31 30 40Z" fill="${c}"/>`,
+            jul: `<line x1="30" y1="8" x2="30" y2="52" stroke="${c}" stroke-width="3" stroke-linecap="round"/><line x1="10" y1="19" x2="50" y2="41" stroke="${c}" stroke-width="3" stroke-linecap="round"/><line x1="50" y1="19" x2="10" y2="41" stroke="${c}" stroke-width="3" stroke-linecap="round"/><circle cx="30" cy="8" r="3" fill="${c}"/><circle cx="30" cy="52" r="3" fill="${c}"/><circle cx="10" cy="19" r="3" fill="${c}"/><circle cx="50" cy="41" r="3" fill="${c}"/><circle cx="50" cy="19" r="3" fill="${c}"/><circle cx="10" cy="41" r="3" fill="${c}"/>`,
+            paaske: `<ellipse cx="30" cy="30" rx="13" ry="18" fill="none" stroke="${c}" stroke-width="3"/><path d="M17 27 Q30 32 43 27" stroke="${c}" stroke-width="2.5" fill="none"/>`,
+            sommer: `<circle cx="30" cy="30" r="9" fill="${c}"/><line x1="30" y1="8" x2="30" y2="16" stroke="${c}" stroke-width="3" stroke-linecap="round"/><line x1="30" y1="44" x2="30" y2="52" stroke="${c}" stroke-width="3" stroke-linecap="round"/><line x1="8" y1="30" x2="16" y2="30" stroke="${c}" stroke-width="3" stroke-linecap="round"/><line x1="44" y1="30" x2="52" y2="30" stroke="${c}" stroke-width="3" stroke-linecap="round"/><line x1="14" y1="14" x2="20" y2="20" stroke="${c}" stroke-width="2.5" stroke-linecap="round"/><line x1="46" y1="14" x2="40" y2="20" stroke="${c}" stroke-width="2.5" stroke-linecap="round"/><line x1="14" y1="46" x2="20" y2="40" stroke="${c}" stroke-width="2.5" stroke-linecap="round"/><line x1="46" y1="46" x2="40" y2="40" stroke="${c}" stroke-width="2.5" stroke-linecap="round"/>`,
+        };
+        const ikon = monstre[tema] || monstre.standard;
+        return `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" opacity="0.13">${ikon}</svg>`;
+    }
+
+    if (bgInput) bgInput.addEventListener('input', opdaterPreview);
+    if (moInput) moInput.addEventListener('input', opdaterPreview);
+    document.querySelectorAll('.tema-radio').forEach(r => r.addEventListener('change', opdaterPreview));
+    if (nulstil && moInput) {
+        nulstil.addEventListener('click', function() {
+            moInput.value = temaDefaultFarver[getAktivTema()] || '#4361ee';
+            opdaterPreview();
+        });
+    }
+    opdaterPreview();
+})();
+
+// Nominatim adresse-autocomplete
+(function() {
+    const stedInput = document.getElementById('id_sted');
+    if (!stedInput) return;
+    const list = document.createElement('ul');
+    list.className = 'list-group position-absolute shadow-sm';
+    list.style.cssText = 'z-index:1000;width:100%;max-height:200px;overflow-y:auto;display:none;';
+    stedInput.parentElement.style.position = 'relative';
+    stedInput.parentElement.appendChild(list);
+    let timer;
+    stedInput.addEventListener('input', function() {
+        clearTimeout(timer);
+        const q = stedInput.value.trim();
+        if (q.length < 3) { list.style.display = 'none'; return; }
+        timer = setTimeout(function() {
+            fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&addressdetails=1&accept-language=da`)
+                .then(r => r.json())
+                .then(data => {
+                    list.innerHTML = '';
+                    if (!data.length) { list.style.display = 'none'; return; }
+                    data.forEach(function(item) {
+                        const a = item.address || {};
+                        const vej = [a.road, a.house_number].filter(Boolean).join(' ');
+                        const by = a.city || a.town || a.village || a.municipality || '';
+                        const kort = [vej, a.postcode ? a.postcode + ' ' + by : by].filter(Boolean).join(', ');
+                        const vaerdi = kort || item.display_name;
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item list-group-item-action small py-2';
+                        li.style.cursor = 'pointer';
+                        li.textContent = item.display_name;
+                        li.addEventListener('click', function() {
+                            stedInput.value = vaerdi;
+                            list.style.display = 'none';
+                        });
+                        list.appendChild(li);
+                    });
+                    list.style.display = 'block';
+                })
+                .catch(() => { list.style.display = 'none'; });
+        }, 400);
+    });
+    document.addEventListener('click', function(e) {
+        if (!stedInput.contains(e.target) && !list.contains(e.target)) list.style.display = 'none';
+    });
+})();
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Husstand-checkbox disabler member-checkboxes
+    document.querySelectorAll('.husstand-check').forEach(function (hCb) {
+        const id = hCb.dataset.husstandId;
+        const memberCbs = document.querySelectorAll(`.husstand-${id}-medl`);
+        hCb.addEventListener('change', function () {
+            memberCbs.forEach(cb => {
+                if (!cb.disabled) {
+                    cb.disabled = hCb.checked;
+                    if (hCb.checked) cb.checked = false;
+                }
+            });
+        });
+    });
+
+    // Vælg/fravælg alle solo kontakter
+    document.getElementById('vael-alle-kontakter')?.addEventListener('click', function () {
+        document.querySelectorAll('.solo-check:not([disabled])').forEach(cb => { cb.checked = true; });
+    });
+    document.getElementById('fravael-alle-kontakter')?.addEventListener('click', function () {
+        document.querySelectorAll('.solo-check').forEach(cb => { cb.checked = false; });
+    });
+
+    // Tag-filter
+    let aktiveTags = new Set();
+    const rydBtn = document.getElementById('ryd-tag-filter');
+
+    function opdaterFilter() {
+        if (rydBtn) rydBtn.classList.toggle('d-none', aktiveTags.size === 0);
+
+        document.querySelectorAll('.kontakt-kort, .husstand-kort').forEach(function (kort) {
+            if (aktiveTags.size === 0) {
+                kort.classList.remove('dimmet');
+                return;
+            }
+            const kortTags = (kort.dataset.tags || '').split(',').map(t => t.trim()).filter(t => t);
+            const matcher = [...aktiveTags].some(t => kortTags.includes(t));
+            kort.classList.toggle('dimmet', !matcher);
+        });
+    }
+
+    document.querySelectorAll('.tag-filter-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+            const tag = chip.dataset.tag;
+            if (aktiveTags.has(tag)) {
+                aktiveTags.delete(tag);
+                chip.classList.remove('active', 'btn-secondary');
+                chip.classList.add('btn-outline-secondary');
+            } else {
+                aktiveTags.add(tag);
+                chip.classList.remove('btn-outline-secondary');
+                chip.classList.add('active', 'btn-secondary');
+            }
+            opdaterFilter();
+        });
+    });
+
+    if (rydBtn) {
+        rydBtn.addEventListener('click', function () {
+            aktiveTags.clear();
+            document.querySelectorAll('.tag-filter-chip').forEach(c => {
+                c.classList.remove('active', 'btn-secondary');
+                c.classList.add('btn-outline-secondary');
+            });
+            opdaterFilter();
+        });
+    }
+});
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+<script>
+(function() {
+    const fileInput = document.getElementById('id_baggrundsbillede');
+    const cropImg   = document.getElementById('crop-img');
+    const modalEl   = document.getElementById('crop-modal');
+    if (!fileInput || !cropImg || !modalEl) return;
+
+    let cropper = null;
+    const bsModal   = new bootstrap.Modal(modalEl);
+    const thumbnail = document.getElementById('crop-thumbnail');
+
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file || !file.type.startsWith('image/')) return;
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            cropImg.src = ev.target.result;
+            bsModal.show();
+        };
+        reader.readAsDataURL(file);
+    });
+
+    modalEl.addEventListener('shown.bs.modal', function() {
+        if (cropper) { cropper.destroy(); cropper = null; }
+        cropper = new Cropper(cropImg, {
+            viewMode: 1,
+            preview: '.crop-preview-box',
+            autoCropArea: 1,
+            movable: true,
+            zoomable: true,
+            rotatable: false,
+            scalable: false,
+        });
+    });
+
+    modalEl.addEventListener('hidden.bs.modal', function() {
+        if (cropper) { cropper.destroy(); cropper = null; }
+    });
+
+    document.getElementById('crop-confirm').addEventListener('click', function() {
+        if (!cropper) return;
+        const canvas = cropper.getCroppedCanvas({ maxWidth: 1600, imageSmoothingQuality: 'high' });
+        canvas.toBlob(function(blob) {
+            const origName = fileInput.files[0] ? fileInput.files[0].name : 'billede.jpg';
+            const croppedFile = new File([blob], origName, { type: 'image/jpeg' });
+            const dt = new DataTransfer();
+            dt.items.add(croppedFile);
+            fileInput.files = dt.files;
+            if (thumbnail) {
+                thumbnail.src = canvas.toDataURL('image/jpeg', 0.7);
+                thumbnail.style.display = 'block';
+            }
+            bsModal.hide();
+        }, 'image/jpeg', 0.92);
+    });
+
+    document.getElementById('crop-cancel').addEventListener('click', function() {
+        fileInput.value = '';
+        if (thumbnail) thumbnail.style.display = 'none';
+        bsModal.hide();
+    });
+})();
+</script>
+{% endblock %}

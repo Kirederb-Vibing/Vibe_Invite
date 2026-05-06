@@ -1,0 +1,8 @@
+{% load i18n %}{% trans "Hej" %} {{ bruger.get_full_name|default:bruger.username }},
+
+{% trans "Din konto på Vibe Invite er nu godkendt og klar til brug." %}
+
+{% trans "Brugernavn:" %} {{ bruger.username }}
+
+{% trans "Log ind her:" %}
+{{ login_url }}

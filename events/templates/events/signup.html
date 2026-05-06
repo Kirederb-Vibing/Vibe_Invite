@@ -1,0 +1,41 @@
+{% extends 'events/base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Opret konto" %}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h2 class="mb-3">{% trans "Opret konto" %}</h2>
+                <p class="text-muted">{% trans "Nye konti skal godkendes af en administrator før du kan logge ind." %}</p>
+                <form method="post">
+                    {% csrf_token %}
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <div class="form-text">{{ field.help_text }}</div>
+                            {% endif %}
+                            {% if field.errors %}
+                                <div class="text-danger small">{{ field.errors }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-primary w-100">{% trans "Opret konto" %}</button>
+                </form>
+                <p class="mt-3 text-center text-muted">
+                    {% trans "Har du allerede en konto?" %} <a href="{% url 'login' %}">{% trans "Log ind" %}</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    input[type=text], input[type=email], input[type=password] {
+        display: block; width: 100%;
+        padding: .375rem .75rem; border: 1px solid #ced4da;
+        border-radius: .375rem;
+    }
+</style>
+{% endblock %}

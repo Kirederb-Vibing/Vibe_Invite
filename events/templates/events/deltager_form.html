@@ -1,0 +1,55 @@
+{% extends 'events/base.html' %}
+{% load i18n %}
+{% load static %}
+{% block title %}{% trans "Tilføj deltager" %} – {{ event.titel }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">{% trans "Mine events" %}</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'event_overblik' event.slug %}">{{ event.titel }}</a></li>
+                <li class="breadcrumb-item active">{% trans "Tilføj deltager" %}</li>
+            </ol>
+        </nav>
+
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h2 class="mb-3">{% blocktrans with titel=event.titel %}Tilføj deltager til "{{ titel }}"{% endblocktrans %}</h2>
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label">{% trans "Navn" %}</label>
+                        {{ form.navn }}
+                        {% if form.navn.errors %}<div class="text-danger small">{{ form.navn.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">{% trans "Email" %}</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}<div class="text-danger small">{{ form.email.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">{% trans "Token (invitationslink)" %}</label>
+                        {{ form.token }}
+                        <div class="form-text">{{ form.token.help_text }}</div>
+                        {% if form.token.errors %}<div class="text-danger small">{{ form.token.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button type="submit" class="btn btn-primary">{% trans "Gem og gå tilbage" %}</button>
+                        <button type="submit" name="gem_og_tilfoej_flere" value="1" class="btn btn-outline-primary">
+                            {% trans "Gem og tilføj endnu en" %}
+                        </button>
+                        <a href="{% url 'event_overblik' event.slug %}" class="btn btn-outline-secondary">{% trans "Annullér" %}</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'events/js/slug_preview.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% load i18n %}<!DOCTYPE html>
+<html lang="da">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:20px;background:#f0f2f5;font-family:Arial,Helvetica,sans-serif;">
+<table cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:580px;margin:0 auto;">
+<tr><td style="background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.1);">
+
+  <!-- Header -->
+  <table cellpadding="0" cellspacing="0" border="0" width="100%">
+  <tr><td style="background:#212529;padding:24px 32px;">
+    <p style="margin:0;color:rgba(255,255,255,.6);font-size:13px;letter-spacing:.5px;text-transform:uppercase;">{% trans "Vibe Invite" %}</p>
+    <h1 style="margin:6px 0 0;color:#fff;font-size:20px;">{% trans "Ny brugeranmodning" %}</h1>
+  </td></tr>
+  </table>
+
+  <!-- Body -->
+  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="padding:0 32px;">
+  <tr><td style="padding:24px 0 16px;">
+    <p style="margin:0;font-size:15px;color:#212529;line-height:1.6;">{% trans "En ny bruger har anmodet om adgang og venter på godkendelse." %}</p>
+  </td></tr>
+
+  <!-- Bruger-info -->
+  <tr><td style="padding:0 0 8px;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #dee2e6;border-radius:8px;overflow:hidden;">
+    <tr style="border-bottom:1px solid #dee2e6;">
+      <td style="padding:12px 16px;background:#f8f9fa;font-size:13px;color:#6c757d;width:35%;">{% trans "Navn" %}</td>
+      <td style="padding:12px 16px;font-size:14px;color:#212529;font-weight:bold;">{{ full_name }}</td>
+    </tr>
+    <tr style="border-bottom:1px solid #dee2e6;">
+      <td style="padding:12px 16px;background:#f8f9fa;font-size:13px;color:#6c757d;">{% trans "Brugernavn" %}</td>
+      <td style="padding:12px 16px;font-size:14px;color:#212529;">{{ username }}</td>
+    </tr>
+    <tr>
+      <td style="padding:12px 16px;background:#f8f9fa;font-size:13px;color:#6c757d;">{% trans "Email" %}</td>
+      <td style="padding:12px 16px;font-size:14px;color:#212529;">{{ email }}</td>
+    </tr>
+    </table>
+  </td></tr>
+
+  <tr><td style="padding:8px 0 0;">
+    <p style="margin:0;font-size:13px;color:#6c757d;">{% trans "Linkene er gyldige i 7 dage. Brugeren notificeres automatisk pr. email." %}</p>
+  </td></tr>
+
+  <!-- To knapper -->
+  <tr><td style="padding:24px 0 32px;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr>
+      <td style="width:50%;padding-right:8px;">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr><td style="background:#198754;border-radius:8px;text-align:center;">
+          <a href="{{ accepter_url }}" style="display:block;padding:14px 0;color:#fff;text-decoration:none;font-weight:bold;font-size:15px;">✅ {% trans "Accepter" %}</a>
+        </td></tr>
+        </table>
+      </td>
+      <td style="width:50%;padding-left:8px;">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr><td style="background:#dc3545;border-radius:8px;text-align:center;">
+          <a href="{{ afvis_url }}" style="display:block;padding:14px 0;color:#fff;text-decoration:none;font-weight:bold;font-size:15px;">🚫 {% trans "Afvis" %}</a>
+        </td></tr>
+        </table>
+      </td>
+    </tr>
+    </table>
+  </td></tr>
+  </table>
+
+  <!-- Footer -->
+  <table cellpadding="0" cellspacing="0" border="0" width="100%">
+  <tr><td style="background:#f8f9fa;padding:14px 32px;border-top:1px solid #dee2e6;text-align:center;">
+    <p style="margin:0;font-size:12px;color:#6c757d;">{% trans "Vibe Invite · automatisk besked" %}</p>
+  </td></tr>
+  </table>
+
+</td></tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,149 @@
+{% extends 'events/base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Tilføj fra gæstebog" %} – {{ event.titel }}{% endblock %}
+{% block content %}
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">{% trans "Mine events" %}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'event_overblik' event.slug %}">{{ event.titel }}</a></li>
+        <li class="breadcrumb-item active">{% trans "Tilføj fra gæstebog" %}</li>
+    </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">{% trans "Tilføj fra gæstebog" %}</h2>
+</div>
+
+<p class="text-muted">
+    {% blocktrans with titel=event.titel %}Vælg hvem der skal inviteres til <strong>{{ titel }}</strong>. Afkryds hele husstande eller individuelle medlemmer. Solo kontakter tilføjes som enkeltinvitationer.{% endblocktrans %}
+</p>
+
+{% if not kontakter and not husstande %}
+<div class="alert alert-info">
+    {% trans "Din gæstebog er tom." %} <a href="{% url 'gaestebog' %}">{% trans "Gå til gæstebogen" %}</a> {% trans "for at tilføje kontakter." %}
+</div>
+{% else %}
+
+<form method="post">
+    {% csrf_token %}
+
+    <div class="row g-4">
+
+        <!-- Solo kontakter -->
+        <div class="col-md-6">
+            <h5>{% trans "Solo kontakter" %}
+                <span class="badge bg-secondary ms-1">{{ kontakter|length }}</span>
+            </h5>
+            {% if kontakter %}
+                <div class="mb-2">
+                    <button type="button" class="btn btn-link btn-sm p-0" id="vael-alle-kontakter">{% trans "Vælg alle" %}</button>
+                    /
+                    <button type="button" class="btn btn-link btn-sm p-0" id="fravael-alle-kontakter">{% trans "Fravælg alle" %}</button>
+                </div>
+                {% for kontakt in kontakter %}
+                <div class="card mb-2 shadow-sm">
+                    <div class="card-body py-2 px-3">
+                        <div class="form-check d-flex align-items-center gap-2">
+                            <input class="form-check-input solo-check" type="checkbox"
+                                   name="kontakt" value="{{ kontakt.pk }}"
+                                   id="kontakt_{{ kontakt.pk }}">
+                            <label class="form-check-label flex-grow-1" for="kontakt_{{ kontakt.pk }}">
+                                <span class="fw-semibold">{{ kontakt.navn }}</span>
+                                <small class="text-muted ms-1">{{ kontakt.email }}</small>
+                                {% for tag in kontakt.tags_liste %}
+                                    <span class="badge bg-secondary ms-1">{{ tag }}</span>
+                                {% endfor %}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">{% trans "Ingen solo kontakter i gæstebogen." %}</p>
+            {% endif %}
+        </div>
+
+        <!-- Husstande -->
+        <div class="col-md-6">
+            <h5>{% trans "Husstande" %}
+                <span class="badge bg-secondary ms-1">{{ husstande|length }}</span>
+            </h5>
+            <p class="text-muted small">
+                {% trans "Afkryds husstandens navn for at tilføje alle dens medlemmer som én husstand. Afkryds enkeltmedlemmer for at tilføje dem som solo-invitationer." %}
+            </p>
+            {% if husstande %}
+                {% for husstand in husstande %}
+                <div class="card mb-2 shadow-sm">
+                    <div class="card-body py-2 px-3">
+                        <div class="form-check d-flex align-items-center gap-2">
+                            <input class="form-check-input husstand-check" type="checkbox"
+                                   name="husstand" value="{{ husstand.pk }}"
+                                   id="husstand_{{ husstand.pk }}"
+                                   data-husstand-id="{{ husstand.pk }}">
+                            <label class="form-check-label fw-semibold flex-grow-1" for="husstand_{{ husstand.pk }}">
+                                {{ husstand.navn }}
+                                <small class="text-muted fw-normal ms-1">({% blocktrans with n=husstand.antal_medlemmer %}{{ n }} medl. – tilføjes som husstand{% endblocktrans %})</small>
+                            </label>
+                        </div>
+                        {% for medlem in husstand.medlemmer.all %}
+                        <div class="ms-4 d-flex align-items-center gap-2 border-top mt-1 pt-1">
+                            <div class="form-check d-flex align-items-center gap-2 flex-grow-1">
+                                <input class="form-check-input husstand-{{ husstand.pk }}-medl" type="checkbox"
+                                       name="husstand_medlem" value="{{ medlem.pk }}"
+                                       id="medlem_{{ medlem.pk }}"
+                                       {% if not medlem.email %}disabled title="{% trans 'Ingen email – kan ikke inviteres separat' %}"{% endif %}>
+                                <label class="form-check-label small {% if not medlem.email %}text-muted{% endif %}" for="medlem_{{ medlem.pk }}">
+                                    {{ medlem.navn }}
+                                    {% if medlem.email %}
+                                        <span class="text-muted">{{ medlem.email }}</span>
+                                    {% else %}
+                                        <span class="text-muted">({% trans "ingen email" %})</span>
+                                    {% endif %}
+                                </label>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">{% trans "Ingen husstande i gæstebogen." %}</p>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <div class="d-flex gap-2 mt-4">
+        <button type="submit" class="btn btn-primary">{% trans "Tilføj valgte til eventet" %}</button>
+        <a href="{% url 'event_overblik' event.slug %}" class="btn btn-outline-secondary">{% trans "Annuller" %}</a>
+    </div>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('vael-alle-kontakter')?.addEventListener('click', function () {
+        document.querySelectorAll('.solo-check').forEach(cb => { cb.checked = true; });
+    });
+    document.getElementById('fravael-alle-kontakter')?.addEventListener('click', function () {
+        document.querySelectorAll('.solo-check').forEach(cb => { cb.checked = false; });
+    });
+
+    document.querySelectorAll('.husstand-check').forEach(function (husstandCb) {
+        const husstandId = husstandCb.dataset.husstandId;
+        const memberCbs = document.querySelectorAll(`.husstand-${husstandId}-medl`);
+
+        husstandCb.addEventListener('change', function () {
+            memberCbs.forEach(cb => {
+                if (!cb.disabled) {
+                    cb.disabled = husstandCb.checked;
+                    if (husstandCb.checked) cb.checked = false;
+                }
+            });
+        });
+    });
+});
+</script>
+{% endif %}
+
+{% endblock %}

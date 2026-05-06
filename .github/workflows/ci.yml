@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  check:
+    name: Django system check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Django system check
+        run: python manage.py check --deploy 2>&1 | grep -v "WARNINGS" || true
+        env:
+          SECRET_KEY: ci-only-not-for-production-xxxxxxxxxxxxxxxxxxx
+          DEBUG: 'False'
+          ALLOWED_HOSTS: localhost
+          CSRF_TRUSTED_ORIGINS: https://localhost
+          SITE_URL: https://localhost
+          DB_HOST: ''
+          ADMIN_URL: 'admin/'
+
+      - name: Check migrations are up to date
+        run: python manage.py migrate --check --run-syncdb
+        env:
+          SECRET_KEY: ci-only-not-for-production-xxxxxxxxxxxxxxxxxxx
+          DEBUG: 'True'
+          ALLOWED_HOSTS: localhost
+          CSRF_TRUSTED_ORIGINS: http://localhost
+          SITE_URL: http://localhost
+          ADMIN_URL: 'admin/'

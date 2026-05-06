@@ -1,0 +1,11 @@
+{% extends 'events/base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Side ikke fundet" %}{% endblock %}
+{% block content %}
+<div class="text-center py-5">
+    <h1 class="display-1 text-muted">404</h1>
+    <h2 class="mb-3">{% trans "Siden findes ikke" %}</h2>
+    <p class="text-muted mb-4">{% trans "Den side du leder efter eksisterer ikke eller er blevet flyttet." %}</p>
+    <a href="/" class="btn btn-primary">{% trans "Gå til forsiden" %}</a>
+</div>
+{% endblock %}

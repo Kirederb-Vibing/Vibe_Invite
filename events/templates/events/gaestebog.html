@@ -1,0 +1,341 @@
+{% extends 'events/base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Gæstebog" %}{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">{% trans "Gæstebog" %}</h2>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#ny-kontakt-panel">
+            + {% trans "Ny kontakt" %}
+        </button>
+        <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#ny-husstand-panel">
+            + {% trans "Ny husstand" %}
+        </button>
+    </div>
+</div>
+
+<!-- Tilføj kontakt (kollapsibel) -->
+<div class="collapse mb-4" id="ny-kontakt-panel">
+    <div class="card shadow-sm border-primary">
+        <div class="card-body p-3">
+            <h6 class="mb-3">{% trans "Tilføj solo kontakt" %}</h6>
+            <form method="post">
+                {% csrf_token %}
+                <div class="row g-2">
+                    <div class="col-md-4">
+                        <label class="form-label form-label-sm">{% trans "Navn" %} *</label>
+                        {{ form.navn }}
+                        {% if form.navn.errors %}<div class="text-danger small">{{ form.navn.errors }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label form-label-sm">{% trans "Email" %} *</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}<div class="text-danger small">{{ form.email.errors }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label form-label-sm">{% trans "Telefon" %}</label>
+                        {{ form.telefon }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label form-label-sm">{% trans "Tags" %}</label>
+                        {% if alle_tags %}
+                        <div class="mb-1">
+                            {% for tag in alle_tags %}
+                            <button type="button" class="btn btn-xs btn-outline-secondary me-1 mb-1 tag-chip"
+                                    style="font-size:.75rem;padding:.15rem .4rem"
+                                    data-tag="{{ tag }}" data-target="id_tags">{{ tag }}</button>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        {{ form.tags }}
+                        <div class="form-text">{% trans 'Kommaseparerede tags, fx "familie, venner"' %}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label form-label-sm">{% trans "Noter" %}</label>
+                        {{ form.noter }}
+                    </div>
+                </div>
+                <div class="mt-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary btn-sm">{% trans "Gem kontakt" %}</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#ny-kontakt-panel">{% trans "Annuller" %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Tilføj husstand (kollapsibel) -->
+<div class="collapse mb-4" id="ny-husstand-panel">
+    <div class="card shadow-sm border-secondary">
+        <div class="card-body p-3">
+            <h6 class="mb-3">{% trans "Opret husstand" %}</h6>
+            <form method="post" action="{% url 'gaestebog_husstand_opret' %}">
+                {% csrf_token %}
+                <div class="row g-2 mb-2">
+                    <div class="col-md-8">
+                        <label class="form-label form-label-sm">{% trans "Husstandens navn" %} *</label>
+                        <input type="text" name="navn" class="form-control form-control-sm" placeholder="{% trans 'Fx Familien Hansen' %}" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label form-label-sm">{% trans "Tags" %}</label>
+                        {% if alle_tags %}
+                        <div class="mb-1">
+                            {% for tag in alle_tags %}
+                            <button type="button" class="btn btn-outline-secondary me-1 mb-1 tag-chip"
+                                    style="font-size:.75rem;padding:.15rem .4rem"
+                                    data-tag="{{ tag }}" data-target="gb-husstand-tags">{{ tag }}</button>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <input type="text" name="tags" id="gb-husstand-tags" class="form-control form-control-sm"
+                               placeholder='{% trans "Tags" %}'>
+                    </div>
+                </div>
+                <div id="gb-medlem-felter">
+                    <div class="input-group input-group-sm mb-2 gb-medlem-raekke">
+                        <input type="text" name="член_navn[]" class="form-control" placeholder="{% trans 'Navn' %} *">
+                        <input type="email" name="член_email[]" class="form-control" placeholder="{% trans 'Email' %}">
+                        <input type="text" name="член_telefon[]" class="form-control" placeholder="{% trans 'Telefon' %}">
+                        <button type="button" class="btn btn-outline-danger gb-fjern-knap">×</button>
+                    </div>
+                </div>
+                <button type="button" id="gb-tilfoej-medlem" class="btn btn-sm btn-outline-secondary mb-2">+ {% trans "Tilføj medlem" %}</button>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-secondary btn-sm">{% trans "Opret husstand" %}</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#ny-husstand-panel">{% trans "Annuller" %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- To-kolonne layout -->
+<div class="row g-4">
+
+    <!-- Kolonne 1: Solo kontakter -->
+    <div class="col-md-6">
+        <h5 class="mb-3">{% trans "Solo kontakter" %}
+            <span class="badge bg-secondary ms-1">{{ kontakter|length }}</span>
+        </h5>
+
+        {% if kontakter %}
+            {% for kontakt in kontakter %}
+            <div class="card mb-2 shadow-sm">
+                <div class="card-body py-2 px-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="flex-grow-1">
+                            <span class="fw-semibold">{{ kontakt.navn }}</span>
+                            <small class="text-muted ms-1">
+                                <a href="mailto:{{ kontakt.email }}">{{ kontakt.email }}</a>
+                            </small>
+                            {% if kontakt.telefon %}
+                                <small class="text-muted ms-1">· {{ kontakt.telefon }}</small>
+                            {% endif %}
+                            {% for tag in kontakt.tags_liste %}
+                                <span class="badge bg-secondary ms-1">{{ tag }}</span>
+                            {% endfor %}
+                        </div>
+                        {% if kontakt.user == request.user %}
+                            <a href="{% url 'contact_rediger' kontakt.pk %}" class="btn btn-sm btn-outline-secondary">{% trans "Rediger" %}</a>
+                            <button type="button" class="btn btn-sm btn-outline-info del-knap"
+                                    data-bs-toggle="modal" data-bs-target="#delModal"
+                                    data-pk="{{ kontakt.pk }}" data-type="contact"
+                                    data-navn="{{ kontakt.navn }}">{% trans "Del" %}</button>
+                            <a href="{% url 'contact_slet' kontakt.pk %}" class="btn btn-sm btn-outline-danger">{% trans "Slet" %}</a>
+                        {% else %}
+                            <span class="text-muted small">{% blocktrans with navn=kontakt.user.get_full_name|default:kontakt.user.username %}Delt af {{ navn }}{% endblocktrans %}</span>
+                        {% endif %}
+                    </div>
+                    {% if kontakt.noter %}
+                        <small class="text-muted d-block mt-1">{{ kontakt.noter|truncatechars:80 }}</small>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="card">
+                <div class="card-body text-center p-4">
+                    <p class="text-muted mb-0">{% trans "Ingen solo kontakter endnu." %}</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Kolonne 2: Husstande -->
+    <div class="col-md-6">
+        <h5 class="mb-3">{% trans "Husstande" %}
+            <span class="badge bg-secondary ms-1">{{ husstande|length }}</span>
+        </h5>
+
+        {% if husstande %}
+            {% for husstand in husstande %}
+            <div class="card mb-2 shadow-sm">
+                <div class="card-body py-2 px-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="flex-grow-1">
+                            <strong>{{ husstand.navn }}</strong>
+                            <small class="text-muted ms-1">{{ husstand.antal_medlemmer }} {% trans "medl." %}</small>
+                            {% for tag in husstand.tags_liste %}
+                                <span class="badge bg-secondary ms-1">{{ tag }}</span>
+                            {% endfor %}
+                        </div>
+                        {% if husstand.user == request.user %}
+                            <a href="{% url 'gaestebog_husstand_rediger' husstand.pk %}" class="btn btn-sm btn-outline-secondary">{% trans "Rediger" %}</a>
+                            <button type="button" class="btn btn-sm btn-outline-info del-knap"
+                                    data-bs-toggle="modal" data-bs-target="#delModal"
+                                    data-pk="{{ husstand.pk }}" data-type="husstand"
+                                    data-navn="{{ husstand.navn }}">{% trans "Del" %}</button>
+                            <a href="{% url 'gaestebog_husstand_slet' husstand.pk %}" class="btn btn-sm btn-outline-danger">{% trans "Slet" %}</a>
+                        {% else %}
+                            <span class="text-muted small">{% blocktrans with navn=husstand.user.get_full_name|default:husstand.user.username %}Delt af {{ navn }}{% endblocktrans %}</span>
+                        {% endif %}
+                    </div>
+                    {% for medlem in husstand.medlemmer.all %}
+                    <div class="d-flex align-items-center gap-2 ms-3 border-top mt-1 pt-1">
+                        <span class="flex-grow-1 small">
+                            <span class="fw-semibold">{{ medlem.navn }}</span>
+                            {% if medlem.email %}
+                                <span class="text-muted ms-1">
+                                    <a href="mailto:{{ medlem.email }}">{{ medlem.email }}</a>
+                                </span>
+                            {% endif %}
+                            {% if medlem.telefon %}
+                                <span class="text-muted ms-1">· {{ medlem.telefon }}</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="card">
+                <div class="card-body text-center p-4">
+                    <p class="text-muted mb-0">{% trans "Ingen husstande endnu." %}</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- Del-modal -->
+<div class="modal fade" id="delModal" tabindex="-1" aria-labelledby="delModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="delModalLabel">{% trans "Del med brugere" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'gaestebog_del' %}">
+                {% csrf_token %}
+                <input type="hidden" name="del_type" id="del-type-input">
+                <input type="hidden" name="pk" id="del-pk-input">
+                <div class="modal-body">
+                    <p class="mb-3">{% trans "Vælg hvem der skal have adgang til" %} <strong id="del-navn-text"></strong>:</p>
+                    {% if alle_brugere %}
+                        {% for bruger in alle_brugere %}
+                        <div class="form-check mb-2">
+                            <input class="form-check-input del-bruger-check" type="checkbox"
+                                   name="del_med_user_ids" value="{{ bruger.pk }}"
+                                   id="del_bruger_{{ bruger.pk }}">
+                            <label class="form-check-label" for="del_bruger_{{ bruger.pk }}">
+                                {{ bruger.get_full_name|default:bruger.username }}
+                                {% if bruger.email %}<small class="text-muted ms-1">{{ bruger.email }}</small>{% endif %}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">{% trans "Ingen andre brugere på systemet." %}</p>
+                    {% endif %}
+                    <div id="del-bekraeft-boks" class="alert alert-info mt-3 d-none">
+                        {% trans "Er du sikker på, at du vil dele" %} <strong id="del-bekraeft-navn"></strong> {% trans "med" %} <span id="del-bekraeft-brugere" class="fw-semibold"></span>?
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{% trans "Annuller" %}</button>
+                    <button type="submit" class="btn btn-primary" id="del-bekraeft-knap" disabled>{% trans "Del" %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    function tilfoejMedlem() {
+        const container = document.getElementById('gb-medlem-felter');
+        const template = container.querySelector('.gb-medlem-raekke');
+        const newRow = template.cloneNode(true);
+        newRow.querySelectorAll('input').forEach(i => { i.value = ''; });
+        container.appendChild(newRow);
+        newRow.querySelector('input[name="член_navn[]"]').focus();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('gb-tilfoej-medlem')?.addEventListener('click', tilfoejMedlem);
+        document.addEventListener('click', function (e) {
+            if (!e.target.classList.contains('gb-fjern-knap')) return;
+            const row = e.target.closest('.gb-medlem-raekke');
+            if (!row) return;
+            const all = document.querySelectorAll('.gb-medlem-raekke');
+            if (all.length <= 1) {
+                row.querySelectorAll('input').forEach(i => { i.value = ''; });
+            } else {
+                row.remove();
+            }
+        });
+
+        document.querySelectorAll('.tag-chip').forEach(function (chip) {
+            chip.addEventListener('click', function () {
+                const targetId = chip.dataset.target;
+                const input = document.getElementById(targetId);
+                if (!input) return;
+                const tag = chip.dataset.tag;
+                const existing = input.value.split(',').map(t => t.trim()).filter(t => t);
+                if (!existing.includes(tag)) {
+                    existing.push(tag);
+                    input.value = existing.join(', ');
+                }
+            });
+        });
+
+        const delModal = document.getElementById('delModal');
+        if (!delModal) return;
+
+        delModal.addEventListener('show.bs.modal', function (e) {
+            const btn = e.relatedTarget;
+            if (!btn) return;
+            document.getElementById('del-pk-input').value = btn.dataset.pk;
+            document.getElementById('del-type-input').value = btn.dataset.type;
+            const navn = btn.dataset.navn;
+            document.getElementById('del-navn-text').textContent = navn;
+            document.getElementById('del-bekraeft-navn').textContent = navn;
+            document.querySelectorAll('.del-bruger-check').forEach(cb => { cb.checked = false; });
+            opdaterDelBekraeft();
+        });
+
+        function opdaterDelBekraeft() {
+            const valgte = [...document.querySelectorAll('.del-bruger-check:checked')]
+                .map(cb => cb.closest('.form-check').querySelector('label').textContent.trim());
+            const boks = document.getElementById('del-bekraeft-boks');
+            const knap = document.getElementById('del-bekraeft-knap');
+            if (valgte.length > 0) {
+                document.getElementById('del-bekraeft-brugere').textContent = valgte.join(', ');
+                boks.classList.remove('d-none');
+                knap.disabled = false;
+            } else {
+                boks.classList.add('d-none');
+                knap.disabled = true;
+            }
+        }
+
+        document.querySelectorAll('.del-bruger-check').forEach(cb => {
+            cb.addEventListener('change', opdaterDelBekraeft);
+        });
+    });
+})();
+</script>
+
+{% endblock %}

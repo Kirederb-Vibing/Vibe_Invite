@@ -1,0 +1,119 @@
+{% extends 'events/base.html' %}
+{% load i18n %}
+{% block title %}{{ titel }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'gaestebog' %}">{% trans "Gæstebog" %}</a></li>
+                <li class="breadcrumb-item active">{{ titel }}</li>
+            </ol>
+        </nav>
+
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h2 class="mb-4">{{ titel }}</h2>
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label">{% trans "Husstandens navn" %} *</label>
+                        {{ form.navn }}
+                        {% if form.navn.errors %}
+                            <div class="text-danger small">{{ form.navn.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">{% trans "Tags" %}</label>
+                        {% if alle_tags %}
+                        <div class="mb-2">
+                            {% for tag in alle_tags %}
+                            <button type="button" class="btn btn-sm btn-outline-secondary me-1 mb-1 tag-chip"
+                                    data-tag="{{ tag }}" data-target="id_tags">{{ tag }}</button>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        {{ form.tags }}
+                        {% if form.tags.errors %}
+                            <div class="text-danger small">{{ form.tags.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">{% trans 'Kommaseparerede tags, fx "familie, venner"' %}</div>
+                    </div>
+
+                    <h5 class="mt-4">{% trans "Medlemmer" %}</h5>
+                    <p class="text-muted small">{% trans "Navn er påkrævet. Email og telefon er valgfrie." %}</p>
+                    <div id="gb-red-medlem-felter">
+                        {% for navn, email, telefon in medlemmer %}
+                        <div class="input-group input-group-sm mb-2 gb-red-raekke">
+                            <input type="text" name="член_navn[]" class="form-control" placeholder="{% trans 'Navn' %} *" value="{{ navn }}">
+                            <input type="email" name="член_email[]" class="form-control" placeholder="{% trans 'Email' %}" value="{{ email }}">
+                            <input type="text" name="член_telefon[]" class="form-control" placeholder="{% trans 'Telefon' %}" value="{{ telefon }}">
+                            <button type="button" class="btn btn-outline-danger gb-red-fjern-knap">×</button>
+                        </div>
+                        {% empty %}
+                        <div class="input-group input-group-sm mb-2 gb-red-raekke">
+                            <input type="text" name="член_navn[]" class="form-control" placeholder="{% trans 'Navn' %} *">
+                            <input type="email" name="член_email[]" class="form-control" placeholder="{% trans 'Email' %}">
+                            <input type="text" name="член_telefon[]" class="form-control" placeholder="{% trans 'Telefon' %}">
+                            <button type="button" class="btn btn-outline-danger gb-red-fjern-knap">×</button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <button type="button" id="gb-red-tilfoej-medlem" class="btn btn-sm btn-outline-secondary mb-4">+ {% trans "Tilføj medlem" %}</button>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">{% trans "Gem" %}</button>
+                        <a href="{% url 'gaestebog' %}" class="btn btn-outline-secondary">{% trans "Annuller" %}</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    function tilfoejMedlem() {
+        const container = document.getElementById('gb-red-medlem-felter');
+        const template = container.querySelector('.gb-red-raekke');
+        const newRow = template.cloneNode(true);
+        newRow.querySelectorAll('input').forEach(i => { i.value = ''; });
+        container.appendChild(newRow);
+        newRow.querySelector('input[name="член_navn[]"]').focus();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('gb-red-tilfoej-medlem').addEventListener('click', tilfoejMedlem);
+        document.addEventListener('click', function (e) {
+            if (!e.target.classList.contains('gb-red-fjern-knap')) return;
+            const row = e.target.closest('.gb-red-raekke');
+            if (!row) return;
+            const all = document.querySelectorAll('.gb-red-raekke');
+            if (all.length <= 1) {
+                row.querySelectorAll('input').forEach(i => { i.value = ''; });
+            } else {
+                row.remove();
+            }
+        });
+
+        // Tag-chips
+        document.querySelectorAll('.tag-chip').forEach(function (chip) {
+            chip.addEventListener('click', function () {
+                const targetId = chip.dataset.target;
+                const input = document.getElementById(targetId);
+                if (!input) return;
+                const tag = chip.dataset.tag;
+                const existing = input.value.split(',').map(t => t.trim()).filter(t => t);
+                if (!existing.includes(tag)) {
+                    existing.push(tag);
+                    input.value = existing.join(', ');
+                }
+            });
+        });
+    });
+})();
+</script>
+{% endblock %}
