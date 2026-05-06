@@ -31,9 +31,8 @@ logs:  ## Follow live logs
 build:  ## Rebuild the application image
 	$(COMPOSE) build
 
-update:  ## Pull latest code and restart
-	git pull
-	$(COMPOSE) build
+update:  ## Pull latest image and restart
+	$(COMPOSE) pull
 	$(COMPOSE) up -d
 
 shell:  ## Open a Django shell

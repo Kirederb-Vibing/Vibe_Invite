@@ -29,6 +29,7 @@ services:
       retries: 5
 
   vibe_invite_web:
+    image: ghcr.io/kirederb-vibing/vibe_invite:latest
     build: .
     restart: unless-stopped
     env_file: .env
@@ -52,6 +53,7 @@ services:
       start_period: 40s
 
   vibe_invite_worker:
+    image: ghcr.io/kirederb-vibing/vibe_invite:latest
     build: .
     restart: unless-stopped
     env_file: .env

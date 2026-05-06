@@ -45,17 +45,42 @@ A self-hosted invitation and RSVP service for private events. Guests receive a p
 
 ---
 
-## Setup guide
+## Quick start
+
+```bash
+# 1. Download the compose file and example config
+mkdir vibe-invite && cd vibe-invite
+curl -LO https://raw.githubusercontent.com/Kirederb-Vibing/Vibe_Invite/main/docker-compose.yml
+curl -LO https://raw.githubusercontent.com/Kirederb-Vibing/Vibe_Invite/main/.env.example
+curl -LO https://raw.githubusercontent.com/Kirederb-Vibing/Vibe_Invite/main/Caddyfile
+
+# 2. Configure
+cp .env.example .env
+nano .env   # fill in SECRET_KEY, DB_PASSWORD, email settings, DOMAIN, etc.
+
+# 3. Start
+docker compose up -d                   # external proxy (port 8000)
+docker compose --profile caddy up -d   # or with built-in Caddy (auto-SSL)
+
+# 4. Create your admin user
+docker compose exec vibe_invite_web python manage.py createsuperuser
+```
+
+The pre-built image `ghcr.io/kirederb-vibing/vibe_invite:latest` is pulled automatically — no build required.
+
+---
+
+## Setup guide (full)
 
 You need:
 - A Linux server with [Docker](https://docs.docker.com/engine/install/) installed
 - A domain name pointing to your server
 - An SMTP account for sending emails (e.g. Mailgun, Brevo, Simply, Gmail SMTP)
 
-**Step 1 — Clone the repository**
+**Step 1 — Clone the repository** (or use the quick start above)
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/vibe-invite vibe-invite
+git clone https://github.com/Kirederb-Vibing/Vibe_Invite vibe-invite
 cd vibe-invite
 ```
 
@@ -227,7 +252,7 @@ The Django admin panel is available at `/admin/`.
 make update
 ```
 
-This pulls the latest code, rebuilds the image, and restarts — migrations run automatically on startup.
+This pulls the latest image from ghcr.io and restarts — migrations run automatically on startup.
 
 ---
 
