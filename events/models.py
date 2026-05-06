@@ -25,6 +25,15 @@ TEMA_VALG = [
     ('sommer', _('Sommerfest')),
 ]
 
+class UserProfile(models.Model):
+    """Extra user fields — tracks whether a password change is required."""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    must_change_password = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.user.username
+
+
 class Event(models.Model):
     titel = models.CharField(max_length=200)
     beskrivelse = models.TextField(blank=True)

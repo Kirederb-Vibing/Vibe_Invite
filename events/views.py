@@ -2,6 +2,8 @@ from django.core.mail import send_mail, EmailMessage, EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
 from django.contrib import messages
 from django.http import HttpResponseForbidden, HttpResponseBadRequest
 from django.db.models import Q
@@ -11,7 +13,7 @@ from django.core import signing
 from django.conf import settings
 from datetime import timezone as dt_timezone
 from django.contrib.auth.models import User
-from .models import Invitation, Event, Husstand, Husstandsmedlem, Contact, GaestebogHusstand, GaestebogMedlem, Delelink, Kommentar, Afstemning, AfstemningValg, AfstemningsSvar
+from .models import UserProfile, Invitation, Event, Husstand, Husstandsmedlem, Contact, GaestebogHusstand, GaestebogMedlem, Delelink, Kommentar, Afstemning, AfstemningValg, AfstemningsSvar
 from .forms import SignupForm, EventForm, InvitationForm, HusstandForm, AfbudEfterFristForm, ContactForm, GaestebogHusstandForm, KommentarForm, AfstemningOpretForm
 
 TEMA_DATA = {
@@ -1684,8 +1686,8 @@ def afstemning_slet(request, slug, pk):
 def manifest_json(request):
     from django.http import JsonResponse
     data = {
-        'name': 'Events',
-        'short_name': 'Events',
+        'name': 'Vibe Invite',
+        'short_name': 'Vibe Invite',
         'description': 'Invitér og hold styr på dine events',
         'start_url': '/',
         'display': 'standalone',
@@ -1755,6 +1757,24 @@ self.addEventListener('fetch', e => {
 });
 """.strip()
     return HttpResponse(js, content_type='application/javascript')
+
+
+@login_required
+def force_password_change(request):
+    """Force user to change password when must_change_password is set."""
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)
+            if hasattr(user, 'profile'):
+                user.profile.must_change_password = False
+                user.profile.save()
+            messages.success(request, _('Din adgangskode er ændret.'))
+            return redirect('dashboard')
+    else:
+        form = PasswordChangeForm(request.user)
+    return render(request, 'events/force_password_change.html', {'form': form})
 
 
 def error_404(request, exception):

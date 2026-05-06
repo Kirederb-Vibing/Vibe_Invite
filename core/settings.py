@@ -48,6 +48,7 @@ MIDDLEWARE = [
     'axes.middleware.AxesMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'events.middleware.ForcePasswordChangeMiddleware',
 ]
 
 AUTHENTICATION_BACKENDS = [

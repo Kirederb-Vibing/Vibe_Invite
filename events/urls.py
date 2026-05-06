@@ -9,6 +9,7 @@ urlpatterns = [
     path('bruger/afvis/<str:token>/', views.bruger_afvis, name='bruger_afvis'),
     path('login/', auth_views.LoginView.as_view(template_name='events/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
+    path('skift-adgangskode/', views.force_password_change, name='force_password_change'),
 
     # Dashboard + event-administration
     path('', views.dashboard, name='dashboard'),
