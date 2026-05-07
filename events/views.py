@@ -1452,44 +1452,40 @@ def gaestebog_husstand_opret(request):
         medlemmer = _parse_gaestebog_husstand_input(request)
         if not medlemmer:
             messages.error(request, _('Tilføj mindst ét husstandsmedlem.'))
-        elif form.is_valid():
-            husstand_navn = form.cleaned_data['navn'].strip()
-
-            # Tjek: husstand med samme navn eksisterer allerede?
-            dup_h = GaestebogHusstand.objects.filter(user=request.user, navn__iexact=husstand_navn).first()
-            if dup_h:
-                messages.info(request, _('Husstanden "%(navn)s" findes allerede i din gæstebog.') % {'navn': husstand_navn})
-                return redirect('gaestebog')
-
-            husstand = form.save(commit=False)
-            husstand.user = request.user
-            husstand.save()
-
-            for navn, email, telefon in medlemmer:
-                # Tjek: er dette medlem allerede en solo kontakt?
-                q = Q(navn__iexact=navn)
-                if email:
-                    q |= Q(email__iexact=email)
-                dup_c = Contact.objects.filter(user=request.user).filter(q).first()
-                if dup_c:
-                    messages.warning(request, _('"%(navn)s" findes allerede som solo kontakt og blev ikke tilføjet til husstanden.') % {'navn': dup_c.navn})
-                    continue
-                GaestebogMedlem.objects.create(
-                    husstand=husstand,
-                    navn=navn,
-                    email=email if email else None,
-                    telefon=telefon,
-                )
-
-            messages.success(request, _('Husstanden "%(navn)s" er oprettet.') % {'navn': husstand.navn})
             return redirect('gaestebog')
-        _kontakter, _husstande, alle_tags = _hent_gaestebog_data(request.user)
-        return render(request, 'events/gaestebog_husstand_form.html', {
-            'form': form,
-            'titel': 'Opret husstand',
-            'medlemmer': medlemmer,
-            'alle_tags': alle_tags,
-        })
+        if not form.is_valid():
+            messages.error(request, _('Udfyld husstandens navn.'))
+            return redirect('gaestebog')
+
+        husstand_navn = form.cleaned_data['navn'].strip()
+
+        # Tjek: husstand med samme navn eksisterer allerede?
+        dup_h = GaestebogHusstand.objects.filter(user=request.user, navn__iexact=husstand_navn).first()
+        if dup_h:
+            messages.info(request, _('Husstanden "%(navn)s" findes allerede i din gæstebog.') % {'navn': husstand_navn})
+            return redirect('gaestebog')
+
+        husstand = form.save(commit=False)
+        husstand.user = request.user
+        husstand.save()
+
+        for navn, email, telefon in medlemmer:
+            # Tjek: er dette medlem allerede en solo kontakt?
+            q = Q(navn__iexact=navn)
+            if email:
+                q |= Q(email__iexact=email)
+            dup_c = Contact.objects.filter(user=request.user).filter(q).first()
+            if dup_c:
+                messages.warning(request, _('"%(navn)s" findes allerede som solo kontakt og blev ikke tilføjet til husstanden.') % {'navn': dup_c.navn})
+                continue
+            GaestebogMedlem.objects.create(
+                husstand=husstand,
+                navn=navn,
+                email=email if email else None,
+                telefon=telefon,
+            )
+
+        messages.success(request, _('Husstanden "%(navn)s" er oprettet.') % {'navn': husstand.navn})
     return redirect('gaestebog')
 
 

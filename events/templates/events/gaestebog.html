@@ -94,9 +94,9 @@
                 </div>
                 <div id="gb-medlem-felter">
                     <div class="input-group input-group-sm mb-2 gb-medlem-raekke">
-                        <input type="text" name="член_navn[]" class="form-control" placeholder="{% trans 'Navn' %} *">
-                        <input type="email" name="член_email[]" class="form-control" placeholder="{% trans 'Email' %}">
-                        <input type="text" name="член_telefon[]" class="form-control" placeholder="{% trans 'Telefon' %}">
+                        <input type="text" name="medlem_navn[]" class="form-control" placeholder="{% trans 'Navn' %} *">
+                        <input type="email" name="medlem_email[]" class="form-control" placeholder="{% trans 'Email' %}">
+                        <input type="text" name="medlem_telefon[]" class="form-control" placeholder="{% trans 'Telefon' %}">
                         <button type="button" class="btn btn-outline-danger gb-fjern-knap">×</button>
                     </div>
                 </div>
@@ -270,7 +270,7 @@
         const newRow = template.cloneNode(true);
         newRow.querySelectorAll('input').forEach(i => { i.value = ''; });
         container.appendChild(newRow);
-        newRow.querySelector('input[name="член_navn[]"]').focus();
+        newRow.querySelector('input[name="medlem_navn[]"]').focus();
     }
 
     document.addEventListener('DOMContentLoaded', function () {
