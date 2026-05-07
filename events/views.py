@@ -1483,7 +1483,7 @@ def gaestebog_husstand_opret(request):
 
             messages.success(request, _('Husstanden "%(navn)s" er oprettet.') % {'navn': husstand.navn})
             return redirect('gaestebog')
-        _, _, alle_tags = _hent_gaestebog_data(request.user)
+        _kontakter, _husstande, alle_tags = _hent_gaestebog_data(request.user)
         return render(request, 'events/gaestebog_husstand_form.html', {
             'form': form,
             'titel': 'Opret husstand',
