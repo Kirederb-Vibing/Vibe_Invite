@@ -1250,10 +1250,10 @@ msgstr ""
 msgid "F.eks. 'Parkering er i gården – ring på porttelefonen.'"
 msgstr ""
 
-msgid "Gå til din RSVP-side"
+msgid "Gå til eventet"
 msgstr ""
 
-msgid "Gå til din RSVP-side:"
+msgid "Gå til eventet:"
 msgstr ""
 
 msgid "Her er de praktiske oplysninger til arrangementet."

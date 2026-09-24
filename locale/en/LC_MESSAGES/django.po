@@ -1250,11 +1250,11 @@ msgstr "The event is cancelled – messages are not sent."
 msgid "F.eks. 'Parkering er i gården – ring på porttelefonen.'"
 msgstr "E.g. 'Parking is in the courtyard – use the gate intercom.'"
 
-msgid "Gå til din RSVP-side"
-msgstr "Go to your RSVP page"
+msgid "Gå til eventet"
+msgstr "Go to the event"
 
-msgid "Gå til din RSVP-side:"
-msgstr "Go to your RSVP page:"
+msgid "Gå til eventet:"
+msgstr "Go to the event:"
 
 msgid "Her er de praktiske oplysninger til arrangementet."
 msgstr "Here are the practical details for the event."
