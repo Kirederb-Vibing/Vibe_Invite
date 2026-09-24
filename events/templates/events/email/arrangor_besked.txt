@@ -11,7 +11,7 @@
 📍 {{ event.sted }}
 {% if event.sidste_svardag %}⏰ {% trans "Svarfrist:" %} {{ event.sidste_svardag|date:"j. F Y, kl. H:i" }}{% endif %}
 
-{% trans "Gå til din RSVP-side:" %}
+{% trans "Gå til eventet:" %}
 {{ rsvp_url }}
 
 {% if event.beskrivelse %}{{ event.beskrivelse }}

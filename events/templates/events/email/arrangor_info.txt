@@ -10,7 +10,7 @@
 {% endif %}{% if event.oenskeliste_url %}🎁 {% trans "Ønskeliste:" %} {{ event.oenskeliste_url }}
 {% endif %}{% if ics_url %}📆 {% trans "Tilføj til kalender:" %} {{ ics_url }}
 {% endif %}
-{% trans "Gå til din RSVP-side:" %}
+{% trans "Gå til eventet:" %}
 {{ rsvp_url }}
 
 {% if event.beskrivelse %}{{ event.beskrivelse }}
