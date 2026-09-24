@@ -35,7 +35,7 @@ jobs:
           ADMIN_URL: 'admin/'
 
       - name: Check migrations are up to date
-        run: python manage.py migrate --check --run-syncdb
+        run: python manage.py makemigrations --check --dry-run
         env:
           SECRET_KEY: ci-only-not-for-production-xxxxxxxxxxxxxxxxxxx
           DEBUG: 'True'
