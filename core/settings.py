@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 from dotenv import load_dotenv
 import os
+from django.contrib.messages import constants as message_constants
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,8 +24,8 @@ DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 ADMIN_URL = os.getenv('ADMIN_URL', 'admin/')
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
-CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost').split(',')
+ALLOWED_HOSTS = [h.strip() for h in os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',') if h.strip()]
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost').split(',') if o.strip()]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -174,6 +175,10 @@ else:
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+MESSAGE_TAGS = {
+    message_constants.ERROR: 'danger',
+}
+
 # Auth
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
@@ -263,6 +268,7 @@ LOGGING = {
 }
 
 if not DEBUG:
+    (BASE_DIR / 'logs').mkdir(exist_ok=True)
     LOGGING['handlers']['file'] = {
         'class': 'logging.handlers.RotatingFileHandler',
         'filename': BASE_DIR / 'logs' / 'django.log',

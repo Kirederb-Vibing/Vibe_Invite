@@ -45,11 +45,18 @@ body {
             {% if not event.aflyst %}
             <a href="{% url 'event_aflys' event.slug %}" class="btn btn-outline-warning">{% trans "Aflys event" %}</a>
             {% endif %}
+            {% if event.arkiveret %}
+            <form method="post" action="{% url 'event_arkiver' event.slug %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-secondary">{% trans "Gendan fra arkiv" %}</button>
+            </form>
+            {% else %}
             <form method="post" action="{% url 'event_arkiver' event.slug %}" class="d-inline"
                   onsubmit="return confirm('{% blocktrans with titel=event.titel %}Arkivér \'{{ titel }}\'? Det skjules fra dashboardet.{% endblocktrans %}')">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-outline-secondary">{% trans "Arkivér" %}</button>
             </form>
+            {% endif %}
             <a href="{% url 'event_slet' event.slug %}" class="btn btn-outline-danger">{% trans "Slet event" %}</a>
         {% else %}
             <a href="{% url 'event_slet' event.slug %}" class="btn btn-outline-warning">{% trans "Fjern mig som medredaktør" %}</a>
@@ -57,12 +64,25 @@ body {
     </div>
 </div>
 
-<form action="{% url 'send_invitationer' event.slug %}" method="post">
-    {% csrf_token %}
-    <button class="btn btn-primary mb-4">
-        {% trans "Send invitationer" %}
+<div class="d-flex gap-2 flex-wrap mb-4">
+    <form action="{% url 'send_invitationer' event.slug %}" method="post">
+        {% csrf_token %}
+        <button class="btn btn-primary">
+            {% trans "Send invitationer" %}
+        </button>
+    </form>
+    <a href="{% url 'event_gaesteliste_csv' event.slug %}" class="btn btn-outline-secondary">
+        {% trans "Download gæsteliste" %}
+    </a>
+    {% if not event.aflyst %}
+    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#beskedModal">
+        {% trans "Send besked" %}
     </button>
-</form>
+    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#infoModal">
+        {% trans "Send info til deltagere" %}
+    </button>
+    {% endif %}
+</div>
 
 <!-- Statistik-bokse (tæller ALLE personer, ikke husstande) -->
 <div class="row g-3 mb-4">
@@ -311,6 +331,87 @@ body {
   </div>
 </div>
 
+{% if not event.aflyst %}
+<!-- Send besked til gæster -->
+<div class="modal fade" id="beskedModal" tabindex="-1" aria-labelledby="beskedModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="{% url 'event_send_besked' event.slug %}" id="besked-form">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="beskedModalLabel">{% trans "Send besked" %}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted small mb-3">{% trans "Skriv en kort besked, der sendes som mail. Vælg hvem der skal have den." %}</p>
+          <div class="mb-3">
+            <label class="form-label" for="arrangor-besked">{% trans "Besked" %}</label>
+            <textarea name="besked" id="arrangor-besked" class="form-control" rows="4" maxlength="1000" required
+                      placeholder="{% trans "F.eks. 'Parkering er i gården – ring på porttelefonen.'" %}"></textarea>
+            <div class="form-text">{% trans "Maks. 1000 tegn. Vises i feltet 'Besked fra arrangørerne'." %}</div>
+          </div>
+          <div>
+            <div class="fw-semibold mb-2">{% trans "Hvem skal have beskeden?" %}</div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="grupper" value="ja" id="grp-ja" checked>
+              <label class="form-check-label" for="grp-ja">{% trans "Deltager" %} ({{ total_ja }})</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="grupper" value="maaske" id="grp-maaske" checked>
+              <label class="form-check-label" for="grp-maaske">{% trans "Måske" %} ({{ total_maaske }})</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="grupper" value="nej" id="grp-nej" checked>
+              <label class="form-check-label" for="grp-nej">{% trans "Deltager ikke" %} ({{ total_nej }})</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="grupper" value="pending" id="grp-pending" checked>
+              <label class="form-check-label" for="grp-pending">{% trans "Intet svar" %} ({{ total_afventer }})</label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{% trans "Fortryd" %}</button>
+          <button type="submit" class="btn btn-primary">{% trans "Send besked" %}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Send praktisk info til Deltager + Måske -->
+<div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="{% url 'event_send_info' event.slug %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="infoModalLabel">{% trans "Send info til deltagere" %}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-2">{% trans "Der sendes en mail med sted, kort, ønskeliste og RSVP-link til alle der har svaret Deltager eller Måske." %}</p>
+          <p class="text-muted small mb-0">{% trans "Modtagere og indhold kan ikke ændres." %}</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">{% trans "Fortryd" %}</button>
+          <button type="submit" class="btn btn-primary">{% trans "Send info" %}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<script>
+document.getElementById('besked-form')?.addEventListener('submit', function (e) {
+    if (!this.querySelectorAll('input[name="grupper"]:checked').length) {
+        e.preventDefault();
+        alert('{% trans "Vælg mindst én gruppe at sende til." %}');
+    }
+});
+</script>
+
 <script>
 function kopierLink(inputId, btn) {
     const val = document.getElementById(inputId).value;
@@ -435,7 +536,14 @@ document.getElementById('tilfoej-svar')?.addEventListener('click', function() {
         </div>
         <div class="flex-grow-1">
             <div class="bg-light rounded p-2 px-3">
-                <div class="fw-semibold small">{{ k.navn }}</div>
+                <div class="d-flex justify-content-between align-items-start gap-2">
+                    <div class="fw-semibold small">{{ k.navn }}</div>
+                    <form method="post" action="{% url 'kommentar_slet' event.slug k.id %}" class="d-inline">
+                        {% csrf_token %}
+                        <button class="btn btn-sm btn-outline-danger py-0 px-1"
+                                onclick="return confirm('{% trans "Slet denne kommentar?" %}')">×</button>
+                    </form>
+                </div>
                 <div class="small">{{ k.tekst }}</div>
             </div>
             <div class="text-muted" style="font-size:.72rem;">{{ k.oprettet|date:"j. F Y, H:i" }}</div>

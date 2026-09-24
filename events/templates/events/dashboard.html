@@ -25,7 +25,7 @@
                         {% endif %}
                     </div>
                     <div class="text-end">
-                        <span class="badge bg-success">{% blocktrans with count=event.invitation_set.count %}{{ count }} inviteret{% endblocktrans %}</span>
+                        <span class="badge bg-success">{% blocktrans with count=event.antal_inviterede %}{{ count }} inviteret{% endblocktrans %}</span>
                         {% if event.oprettet_af != user %}
                             <br><small class="text-muted mt-1 d-inline-block">{% trans "Medredaktør" %}</small>
                         {% endif %}

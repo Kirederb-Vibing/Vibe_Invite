@@ -5,8 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from django.contrib import messages
-from django.http import HttpResponseForbidden, HttpResponseBadRequest
-from django.db.models import Q
+from django.http import HttpResponseForbidden, HttpResponseBadRequest, HttpResponse
+from django.db.models import Count, Q
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.core import signing
@@ -175,6 +175,83 @@ def _rsvp_kontekst(event, request):
     }
 
 
+BESKED_MAX_LAENGDE = 1000
+GYLDIGE_GAESTEGRUPPER = frozenset({'ja', 'maaske', 'nej', 'pending'})
+
+
+def _effektiv_status_for_medlem(husstand, medlem):
+    """Husstandens fælles svar overstyrer, undtagen ved individuelle svar."""
+    if husstand.status == 'individuelt':
+        return medlem.status
+    if husstand.status == 'ja':
+        return 'ja'
+    return husstand.status
+
+
+def _gaester_efter_status(event, statusser):
+    """Unikke gæster med email, hvis effektive RSVP-status er i `statusser`.
+
+    Returnerer dicts med email, navn, token og husstand_navn (None for solo).
+    """
+    statusser = set(statusser)
+    sete_emails = set()
+    resultat = []
+
+    def _tilfoej(email, navn, token, husstand_navn=None):
+        noegle = (email or '').strip().lower()
+        if not noegle or noegle in sete_emails:
+            return
+        sete_emails.add(noegle)
+        resultat.append({
+            'email': email.strip(),
+            'navn': navn,
+            'token': token,
+            'husstand_navn': husstand_navn,
+        })
+
+    for inv in event.invitation_set.all():
+        if inv.status in statusser:
+            _tilfoej(inv.email, inv.navn, inv.token)
+
+    for husstand in event.husstande.prefetch_related('medlemmer'):
+        medlemmer = list(husstand.medlemmer.all())
+        er_solo = len(medlemmer) == 1
+        husstand_navn = None if er_solo else husstand.navn
+        for medlem in medlemmer:
+            if _effektiv_status_for_medlem(husstand, medlem) not in statusser:
+                continue
+            _tilfoej(medlem.email, medlem.navn, husstand.token, husstand_navn)
+
+    return resultat
+
+
+def _send_arrangor_mail_til_gaester(request, event, gaester, subject, template_prefix, extra_context=None):
+    """Send samme type mail til en liste af gæster, med personligt RSVP-link."""
+    ics_content = _generer_ics(event)
+    attachment = (f'{event.slug}.ics', ics_content, 'text/calendar')
+    links = _rsvp_kontekst(event, request)
+    sendt = 0
+    for gaest in gaester:
+        context = {
+            'navn': gaest['navn'],
+            'event': event,
+            'rsvp_url': request.build_absolute_uri(f"/rsvp/{gaest['token']}/"),
+            'husstand_navn': gaest['husstand_navn'],
+            **links,
+        }
+        if extra_context:
+            context.update(extra_context)
+        _send_html_mail(
+            subject=subject,
+            to=gaest['email'],
+            template_prefix=template_prefix,
+            context=context,
+            attachment=attachment,
+        )
+        sendt += 1
+    return sendt
+
+
 def _andre_deltagere(event, ekskluder_email=None):
     """Returnerer liste af navne på bekræftede deltagere (max 20)."""
     navne = list(event.invitation_set.filter(status='ja').exclude(
@@ -274,6 +351,10 @@ def dashboard(request):
         qs = Event.objects.filter(
             Q(oprettet_af=request.user) | Q(medredaktorer=request.user)
         ).distinct()
+    qs = qs.annotate(
+        antal_solo=Count('invitation', distinct=True),
+        antal_husstandsmedlemmer=Count('husstande__medlemmer', distinct=True),
+    )
     events = qs.filter(arkiveret=False).order_by('-dato')
     arkiverede = qs.filter(arkiveret=True).order_by('-dato')
     return render(request, 'events/dashboard.html', {
@@ -1256,6 +1337,76 @@ def gensend_invitation_husstand(request, slug, token):
     return redirect('event_overblik', slug=slug)
 
 
+@login_required
+def event_send_besked(request, slug):
+    """Send en kort besked fra arrangøren til valgte RSVP-grupper."""
+    if request.method != 'POST':
+        return HttpResponseForbidden()
+    event = get_object_or_404(Event, slug=slug)
+    if not event.kan_ses_af(request.user):
+        return HttpResponseForbidden('Du har ikke adgang til dette event.')
+    if event.aflyst:
+        messages.warning(request, _('Eventet er aflyst – der sendes ikke beskeder.'))
+        return redirect('event_overblik', slug=slug)
+
+    besked = request.POST.get('besked', '').strip()
+    if not besked:
+        messages.error(request, _('Skriv en besked, der skal sendes.'))
+        return redirect('event_overblik', slug=slug)
+    if len(besked) > BESKED_MAX_LAENGDE:
+        messages.error(request, _('Beskeden er for lang (maks. %(n)d tegn).') % {'n': BESKED_MAX_LAENGDE})
+        return redirect('event_overblik', slug=slug)
+
+    grupper = set(request.POST.getlist('grupper')) & GYLDIGE_GAESTEGRUPPER
+    if not grupper:
+        messages.error(request, _('Vælg mindst én gruppe at sende til.'))
+        return redirect('event_overblik', slug=slug)
+
+    gaester = _gaester_efter_status(event, grupper)
+    if not gaester:
+        messages.warning(request, _('Ingen gæster med email i de valgte grupper.'))
+        return redirect('event_overblik', slug=slug)
+
+    sendt = _send_arrangor_mail_til_gaester(
+        request,
+        event,
+        gaester,
+        subject=_('Besked fra arrangørerne: %(titel)s') % {'titel': event.titel},
+        template_prefix='arrangor_besked',
+        extra_context={'arrangor_besked': besked},
+    )
+    messages.success(request, _('Beskeden er sendt til %(n)d gæst(er).') % {'n': sendt})
+    return redirect('event_overblik', slug=slug)
+
+
+@login_required
+def event_send_info(request, slug):
+    """Send fast praktisk-info-mail til gæster der deltager eller har svaret måske."""
+    if request.method != 'POST':
+        return HttpResponseForbidden()
+    event = get_object_or_404(Event, slug=slug)
+    if not event.kan_ses_af(request.user):
+        return HttpResponseForbidden('Du har ikke adgang til dette event.')
+    if event.aflyst:
+        messages.warning(request, _('Eventet er aflyst – der sendes ikke beskeder.'))
+        return redirect('event_overblik', slug=slug)
+
+    gaester = _gaester_efter_status(event, {'ja', 'maaske'})
+    if not gaester:
+        messages.warning(request, _('Ingen deltagere eller måske-gæster med email.'))
+        return redirect('event_overblik', slug=slug)
+
+    sendt = _send_arrangor_mail_til_gaester(
+        request,
+        event,
+        gaester,
+        subject=_('Praktisk info: %(titel)s') % {'titel': event.titel},
+        template_prefix='arrangor_info',
+    )
+    messages.success(request, _('Info er sendt til %(n)d gæst(er).') % {'n': sendt})
+    return redirect('event_overblik', slug=slug)
+
+
 # ---------- INTERNE HJÆLPEFUNKTIONER ----------
 def _send_afbud_mail_til_arrangør(invitation):
     event = invitation.event
@@ -1711,10 +1862,13 @@ def event_arkiver(request, slug):
     if not er_ejer:
         return HttpResponseForbidden('Kun ejeren kan arkivere et event.')
     if request.method == 'POST':
-        event.arkiveret = True
+        event.arkiveret = not event.arkiveret
         event.save(update_fields=['arkiveret'])
-        messages.success(request, _('"%(titel)s" er arkiveret.') % {'titel': event.titel})
-        return redirect('dashboard')
+        if event.arkiveret:
+            messages.success(request, _('"%(titel)s" er arkiveret.') % {'titel': event.titel})
+            return redirect('dashboard')
+        messages.success(request, _('"%(titel)s" er gendannet fra arkivet.') % {'titel': event.titel})
+        return redirect('event_overblik', slug=slug)
     return redirect('event_overblik', slug=slug)
 
 
@@ -1752,6 +1906,70 @@ def afstemning_slet(request, slug, pk):
         afstemning.delete()
         messages.success(request, _('Afstemning slettet.'))
     return redirect('event_overblik', slug=slug)
+
+
+@login_required
+def kommentar_slet(request, slug, pk):
+    """POST: arrangør sletter en kommentar."""
+    event = get_object_or_404(Event, slug=slug)
+    if not event.kan_ses_af(request.user):
+        return HttpResponseForbidden('Du har ikke adgang til dette event.')
+
+    if request.method == 'POST':
+        kommentar = get_object_or_404(Kommentar, pk=pk, event=event)
+        kommentar.delete()
+        messages.success(request, _('Kommentar slettet.'))
+    return redirect('event_overblik', slug=slug)
+
+
+@login_required
+def event_gaesteliste_csv(request, slug):
+    """Download gæsteliste som CSV (Excel-venlig)."""
+    import csv
+
+    event = get_object_or_404(Event, slug=slug)
+    if not event.kan_ses_af(request.user):
+        return HttpResponseForbidden('Du har ikke adgang til dette event.')
+
+    status_label = {
+        'ja': str(_('Deltager')),
+        'nej': str(_('Deltager ikke')),
+        'maaske': str(_('Måske')),
+        'pending': str(_('Intet svar')),
+    }
+    response = HttpResponse(content_type='text/csv; charset=utf-8')
+    response['Content-Disposition'] = f'attachment; filename="{event.slug}-gaester.csv"'
+    response.write('\ufeff')
+    writer = csv.writer(response)
+    writer.writerow([
+        str(_('Navn')),
+        str(_('Email')),
+        str(_('Status')),
+        str(_('Type')),
+        str(_('Husstand')),
+        str(_('Afbud-årsag')),
+    ])
+    for inv in event.invitation_set.all().order_by('navn'):
+        writer.writerow([
+            inv.navn,
+            inv.email,
+            status_label.get(inv.status, inv.status),
+            str(_('Solo')),
+            '',
+            inv.afbud_aarsag,
+        ])
+    for husstand in event.husstande.prefetch_related('medlemmer').order_by('navn'):
+        for medlem in husstand.medlemmer.all():
+            status = _effektiv_status_for_medlem(husstand, medlem)
+            writer.writerow([
+                medlem.navn,
+                medlem.email or '',
+                status_label.get(status, status),
+                str(_('Husstand')),
+                husstand.navn,
+                husstand.afbud_aarsag if status == 'nej' else '',
+            ])
+    return response
 
 
 # ---------- PWA ----------
@@ -1834,7 +2052,10 @@ self.addEventListener('fetch', e => {
 
 @login_required
 def force_password_change(request):
-    """Force user to change password when must_change_password is set."""
+    """Skift adgangskode. Påkrævet når must_change_password er sat."""
+    tvunget = bool(
+        getattr(getattr(request.user, 'profile', None), 'must_change_password', False)
+    )
     if request.method == 'POST':
         form = PasswordChangeForm(request.user, request.POST)
         if form.is_valid():
@@ -1847,7 +2068,10 @@ def force_password_change(request):
             return redirect('dashboard')
     else:
         form = PasswordChangeForm(request.user)
-    return render(request, 'events/force_password_change.html', {'form': form})
+    return render(request, 'events/force_password_change.html', {
+        'form': form,
+        'tvunget': tvunget,
+    })
 
 
 def error_404(request, exception):

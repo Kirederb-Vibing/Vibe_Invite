@@ -14,13 +14,14 @@
                 {% endif %}
                 <form method="post">
                     {% csrf_token %}
+                    {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
                     <div class="mb-3">
                         <label class="form-label">{% trans "Brugernavn" %}</label>
-                        <input type="text" name="username" class="form-control" required autofocus>
+                        <input type="text" name="username" class="form-control" required autofocus autocomplete="username">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">{% trans "Adgangskode" %}</label>
-                        <input type="password" name="password" class="form-control" required>
+                        <input type="password" name="password" class="form-control" required autocomplete="current-password">
                     </div>
                     <button type="submit" class="btn btn-primary w-100">{% trans "Log ind" %}</button>
                 </form>

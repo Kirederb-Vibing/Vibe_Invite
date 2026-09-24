@@ -1220,3 +1220,132 @@ msgstr "Ønskeliste-link"
 msgid "Ønskeliste-link (valgfrit)"
 msgstr "Wish list link (optional)"
 
+msgid "Arrangørerne har sendt dig en besked."
+msgstr "The organizers have sent you a message."
+
+msgid "Besked"
+msgstr "Message"
+
+msgid "Besked fra arrangørerne"
+msgstr "Message from the organizers"
+
+msgid "Besked fra arrangørerne: %(titel)s"
+msgstr "Message from the organizers: %(titel)s"
+
+msgid "Beskeden er for lang (maks. %(n)d tegn)."
+msgstr "The message is too long (max. %(n)d characters)."
+
+msgid "Beskeden er sendt til %(n)d gæst(er)."
+msgstr "The message was sent to %(n)d guest(s)."
+
+msgid "Der sendes en mail med sted, kort, ønskeliste og RSVP-link til alle der har svaret Deltager eller Måske."
+msgstr "An email with location, map, wish list and RSVP link will be sent to everyone who responded Attending or Maybe."
+
+msgid "Du modtager denne besked som del af husstanden \"%(husstand)s\"."
+msgstr "You are receiving this message as part of the household \"%(husstand)s\"."
+
+msgid "Eventet er aflyst – der sendes ikke beskeder."
+msgstr "The event is cancelled – messages are not sent."
+
+msgid "F.eks. 'Parkering er i gården – ring på porttelefonen.'"
+msgstr "E.g. 'Parking is in the courtyard – use the gate intercom.'"
+
+msgid "Gå til din RSVP-side"
+msgstr "Go to your RSVP page"
+
+msgid "Gå til din RSVP-side:"
+msgstr "Go to your RSVP page:"
+
+msgid "Her er de praktiske oplysninger til arrangementet."
+msgstr "Here are the practical details for the event."
+
+msgid "Hvem skal have beskeden?"
+msgstr "Who should receive the message?"
+
+msgid "Info er sendt til %(n)d gæst(er)."
+msgstr "Info was sent to %(n)d guest(s)."
+
+msgid "Ingen deltagere eller måske-gæster med email."
+msgstr "No attending or maybe guests with an email address."
+
+msgid "Ingen gæster med email i de valgte grupper."
+msgstr "No guests with an email address in the selected groups."
+
+msgid "Intet svar"
+msgstr "No response"
+
+msgid "Kalender"
+msgstr "Calendar"
+
+msgid "Maks. 1000 tegn. Vises i feltet 'Besked fra arrangørerne'."
+msgstr "Max. 1000 characters. Shown in the 'Message from the organizers' field."
+
+msgid "Modtagere og indhold kan ikke ændres."
+msgstr "Recipients and content cannot be changed."
+
+msgid "Placering"
+msgstr "Location"
+
+msgid "Placering:"
+msgstr "Location:"
+
+msgid "Praktisk info"
+msgstr "Practical info"
+
+msgid "Praktisk info: %(titel)s"
+msgstr "Practical info: %(titel)s"
+
+msgid "Send besked"
+msgstr "Send message"
+
+msgid "Send info"
+msgstr "Send info"
+
+msgid "Send info til deltagere"
+msgstr "Send info to guests"
+
+msgid "Se på kort:"
+msgstr "View on map:"
+
+msgid "Skriv en besked, der skal sendes."
+msgstr "Write a message to send."
+
+msgid "Skriv en kort besked, der sendes som mail. Vælg hvem der skal have den."
+msgstr "Write a short message to send by email. Choose who should receive it."
+
+msgid "Tilføj til kalender:"
+msgstr "Add to calendar:"
+
+msgid "Vælg mindst én gruppe at sende til."
+msgstr "Select at least one group to send to."
+
+msgid "Åbn ønskeliste"
+msgstr "Open wish list"
+
+msgid "Ønskeliste:"
+msgstr "Wish list:"
+
+msgid "Admin"
+msgstr "Admin"
+
+msgid "Kommentar slettet."
+msgstr "Comment deleted."
+
+msgid "Download gæsteliste"
+msgstr "Download guest list"
+
+msgid "Gendan fra arkiv"
+msgstr "Restore from archive"
+
+msgid "Slet denne kommentar?"
+msgstr "Delete this comment?"
+
+msgid "Skift adgangskode"
+msgstr "Change password"
+
+msgid "Type"
+msgstr "Type"
+
+msgid "\"%(titel)s\" er gendannet fra arkivet."
+msgstr "\"%(titel)s\" has been restored from the archive."
+
