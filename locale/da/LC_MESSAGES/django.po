@@ -1325,3 +1325,27 @@ msgstr ""
 msgid "Ønskeliste:"
 msgstr ""
 
+msgid "Admin"
+msgstr ""
+
+msgid "Kommentar slettet."
+msgstr ""
+
+msgid "Download gæsteliste"
+msgstr ""
+
+msgid "Gendan fra arkiv"
+msgstr ""
+
+msgid "Slet denne kommentar?"
+msgstr ""
+
+msgid "Skift adgangskode"
+msgstr ""
+
+msgid "Type"
+msgstr ""
+
+msgid "\"%(titel)s\" er gendannet fra arkivet."
+msgstr ""
+

@@ -39,6 +39,7 @@ urlpatterns = [
     path('event/<slug:slug>/besked/', views.event_send_besked, name='event_send_besked'),
     path('event/<slug:slug>/info/', views.event_send_info, name='event_send_info'),
     path('event/<slug:slug>/arkiver/', views.event_arkiver, name='event_arkiver'),
+    path('event/<slug:slug>/gaesteliste.csv', views.event_gaesteliste_csv, name='event_gaesteliste_csv'),
     path('event/<slug:slug>/kalender.ics', views.event_ics, name='event_ics'),
 
     # Delelink (offentlig selvtilmelding)
@@ -68,6 +69,7 @@ urlpatterns = [
     # Afstemninger (admin)
     path('event/<slug:slug>/afstemning/ny/', views.afstemning_opret, name='afstemning_opret'),
     path('event/<slug:slug>/afstemning/<int:pk>/slet/', views.afstemning_slet, name='afstemning_slet'),
+    path('event/<slug:slug>/kommentar/<int:pk>/slet/', views.kommentar_slet, name='kommentar_slet'),
 
     # Kommentarer + afstemning-stemmer (gæster via RSVP-token)
     path('rsvp/<slug:token>/kommentar/', views.kommentar_opret, name='kommentar_opret'),

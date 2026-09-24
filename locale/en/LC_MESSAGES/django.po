@@ -1325,3 +1325,27 @@ msgstr "Open wish list"
 msgid "Ønskeliste:"
 msgstr "Wish list:"
 
+msgid "Admin"
+msgstr "Admin"
+
+msgid "Kommentar slettet."
+msgstr "Comment deleted."
+
+msgid "Download gæsteliste"
+msgstr "Download guest list"
+
+msgid "Gendan fra arkiv"
+msgstr "Restore from archive"
+
+msgid "Slet denne kommentar?"
+msgstr "Delete this comment?"
+
+msgid "Skift adgangskode"
+msgstr "Change password"
+
+msgid "Type"
+msgstr "Type"
+
+msgid "\"%(titel)s\" er gendannet fra arkivet."
+msgstr "\"%(titel)s\" has been restored from the archive."
+

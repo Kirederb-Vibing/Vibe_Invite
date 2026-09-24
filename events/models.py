@@ -140,6 +140,16 @@ class Event(models.Model):
             return False
         return timezone.now() > self.sidste_svardag
 
+    @property
+    def antal_inviterede(self):
+        """Solo-invitationer + husstandsmedlemmer. Bruger annotate-felter hvis de findes."""
+        if hasattr(self, 'antal_solo') and hasattr(self, 'antal_husstandsmedlemmer'):
+            return (self.antal_solo or 0) + (self.antal_husstandsmedlemmer or 0)
+        return (
+            self.invitation_set.count()
+            + Husstandsmedlem.objects.filter(husstand__event=self).count()
+        )
+
 class Invitation(models.Model):
     """Solo-invitation til en enkelt gæst."""
     STATUS = [

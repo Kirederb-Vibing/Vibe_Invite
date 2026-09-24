@@ -5,8 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from django.contrib import messages
-from django.http import HttpResponseForbidden, HttpResponseBadRequest
-from django.db.models import Q
+from django.http import HttpResponseForbidden, HttpResponseBadRequest, HttpResponse
+from django.db.models import Count, Q
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.core import signing
@@ -351,6 +351,10 @@ def dashboard(request):
         qs = Event.objects.filter(
             Q(oprettet_af=request.user) | Q(medredaktorer=request.user)
         ).distinct()
+    qs = qs.annotate(
+        antal_solo=Count('invitation', distinct=True),
+        antal_husstandsmedlemmer=Count('husstande__medlemmer', distinct=True),
+    )
     events = qs.filter(arkiveret=False).order_by('-dato')
     arkiverede = qs.filter(arkiveret=True).order_by('-dato')
     return render(request, 'events/dashboard.html', {
@@ -1858,10 +1862,13 @@ def event_arkiver(request, slug):
     if not er_ejer:
         return HttpResponseForbidden('Kun ejeren kan arkivere et event.')
     if request.method == 'POST':
-        event.arkiveret = True
+        event.arkiveret = not event.arkiveret
         event.save(update_fields=['arkiveret'])
-        messages.success(request, _('"%(titel)s" er arkiveret.') % {'titel': event.titel})
-        return redirect('dashboard')
+        if event.arkiveret:
+            messages.success(request, _('"%(titel)s" er arkiveret.') % {'titel': event.titel})
+            return redirect('dashboard')
+        messages.success(request, _('"%(titel)s" er gendannet fra arkivet.') % {'titel': event.titel})
+        return redirect('event_overblik', slug=slug)
     return redirect('event_overblik', slug=slug)
 
 
@@ -1899,6 +1906,70 @@ def afstemning_slet(request, slug, pk):
         afstemning.delete()
         messages.success(request, _('Afstemning slettet.'))
     return redirect('event_overblik', slug=slug)
+
+
+@login_required
+def kommentar_slet(request, slug, pk):
+    """POST: arrangør sletter en kommentar."""
+    event = get_object_or_404(Event, slug=slug)
+    if not event.kan_ses_af(request.user):
+        return HttpResponseForbidden('Du har ikke adgang til dette event.')
+
+    if request.method == 'POST':
+        kommentar = get_object_or_404(Kommentar, pk=pk, event=event)
+        kommentar.delete()
+        messages.success(request, _('Kommentar slettet.'))
+    return redirect('event_overblik', slug=slug)
+
+
+@login_required
+def event_gaesteliste_csv(request, slug):
+    """Download gæsteliste som CSV (Excel-venlig)."""
+    import csv
+
+    event = get_object_or_404(Event, slug=slug)
+    if not event.kan_ses_af(request.user):
+        return HttpResponseForbidden('Du har ikke adgang til dette event.')
+
+    status_label = {
+        'ja': str(_('Deltager')),
+        'nej': str(_('Deltager ikke')),
+        'maaske': str(_('Måske')),
+        'pending': str(_('Intet svar')),
+    }
+    response = HttpResponse(content_type='text/csv; charset=utf-8')
+    response['Content-Disposition'] = f'attachment; filename="{event.slug}-gaester.csv"'
+    response.write('\ufeff')
+    writer = csv.writer(response)
+    writer.writerow([
+        str(_('Navn')),
+        str(_('Email')),
+        str(_('Status')),
+        str(_('Type')),
+        str(_('Husstand')),
+        str(_('Afbud-årsag')),
+    ])
+    for inv in event.invitation_set.all().order_by('navn'):
+        writer.writerow([
+            inv.navn,
+            inv.email,
+            status_label.get(inv.status, inv.status),
+            str(_('Solo')),
+            '',
+            inv.afbud_aarsag,
+        ])
+    for husstand in event.husstande.prefetch_related('medlemmer').order_by('navn'):
+        for medlem in husstand.medlemmer.all():
+            status = _effektiv_status_for_medlem(husstand, medlem)
+            writer.writerow([
+                medlem.navn,
+                medlem.email or '',
+                status_label.get(status, status),
+                str(_('Husstand')),
+                husstand.navn,
+                husstand.afbud_aarsag if status == 'nej' else '',
+            ])
+    return response
 
 
 # ---------- PWA ----------
@@ -1981,7 +2052,10 @@ self.addEventListener('fetch', e => {
 
 @login_required
 def force_password_change(request):
-    """Force user to change password when must_change_password is set."""
+    """Skift adgangskode. Påkrævet når must_change_password er sat."""
+    tvunget = bool(
+        getattr(getattr(request.user, 'profile', None), 'must_change_password', False)
+    )
     if request.method == 'POST':
         form = PasswordChangeForm(request.user, request.POST)
         if form.is_valid():
@@ -1994,7 +2068,10 @@ def force_password_change(request):
             return redirect('dashboard')
     else:
         form = PasswordChangeForm(request.user)
-    return render(request, 'events/force_password_change.html', {'form': form})
+    return render(request, 'events/force_password_change.html', {
+        'form': form,
+        'tvunget': tvunget,
+    })
 
 
 def error_404(request, exception):

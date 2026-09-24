@@ -6,7 +6,7 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
-from .models import Event, Husstand, Husstandsmedlem, Invitation
+from .models import Event, Husstand, Husstandsmedlem, Invitation, Kommentar
 
 
 def _html(message):
@@ -195,3 +195,84 @@ class ArrangorMailTests(TestCase):
         self._login()
         self.assertEqual(self.client.get(self.besked_url).status_code, 403)
         self.assertEqual(self.client.get(self.info_url).status_code, 403)
+
+
+class RedaktorPolishTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username='arr', password='hemmelig-kode-1', email='arr@example.com',
+            first_name='Frederik',
+        )
+        self.event = Event.objects.create(
+            titel='Havefest',
+            dato=timezone.now() + timedelta(days=7),
+            sted='Havnen 1',
+            slug='havefest',
+            oprettet_af=self.user,
+        )
+        Invitation.objects.create(
+            event=self.event, navn='Anna', email='anna@example.com',
+            status='ja', token='anna',
+        )
+        h = Husstand.objects.create(event=self.event, navn='Hansen', status='maaske', token='hansen')
+        Husstandsmedlem.objects.create(husstand=h, navn='Far', email='far@example.com')
+        Husstandsmedlem.objects.create(husstand=h, navn='Mor', email='mor@example.com')
+
+    def test_admin_link_kun_for_staff(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse('dashboard'))
+        self.assertNotContains(response, reverse('admin:index'))
+        self.user.is_staff = True
+        self.user.save()
+        response = self.client.get(reverse('dashboard'))
+        self.assertContains(response, reverse('admin:index'))
+        self.assertContains(response, 'Admin')
+
+    def test_login_respekterer_next(self):
+        next_url = reverse('event_opret')
+        response = self.client.post(reverse('login'), {
+            'username': 'arr',
+            'password': 'hemmelig-kode-1',
+            'next': next_url,
+        })
+        self.assertRedirects(response, next_url)
+
+    def test_dashboard_taeller_husstande_med(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse('dashboard'))
+        self.assertContains(response, '3 inviteret')
+
+    def test_gendan_fra_arkiv(self):
+        self.event.arkiveret = True
+        self.event.save(update_fields=['arkiveret'])
+        self.client.force_login(self.user)
+        response = self.client.post(reverse('event_arkiver', args=[self.event.slug]))
+        self.assertRedirects(response, reverse('event_overblik', args=[self.event.slug]))
+        self.event.refresh_from_db()
+        self.assertFalse(self.event.arkiveret)
+
+    def test_gaesteliste_csv(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse('event_gaesteliste_csv', args=[self.event.slug]))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('text/csv', response['Content-Type'])
+        body = response.content.decode('utf-8-sig')
+        self.assertIn('Anna', body)
+        self.assertIn('Far', body)
+        self.assertIn('Hansen', body)
+
+    def test_kommentar_slet(self):
+        k = Kommentar.objects.create(
+            event=self.event, token='anna', navn='Anna', tekst='Hej alle',
+        )
+        self.client.force_login(self.user)
+        response = self.client.post(reverse('kommentar_slet', args=[self.event.slug, k.pk]))
+        self.assertRedirects(response, reverse('event_overblik', args=[self.event.slug]))
+        self.assertFalse(Kommentar.objects.filter(pk=k.pk).exists())
+
+    def test_skift_adgangskode_vises_uden_tvang(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse('force_password_change'))
+        self.assertContains(response, 'Skift adgangskode')
+        self.assertNotContains(response, 'Du skal vælge en ny adgangskode før du kan fortsætte.')
+
