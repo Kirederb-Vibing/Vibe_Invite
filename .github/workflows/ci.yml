@@ -43,3 +43,14 @@ jobs:
           CSRF_TRUSTED_ORIGINS: http://localhost
           SITE_URL: http://localhost
           ADMIN_URL: 'admin/'
+
+      - name: Run tests
+        run: python manage.py test events --verbosity=1
+        env:
+          SECRET_KEY: ci-only-not-for-production-xxxxxxxxxxxxxxxxxxx
+          DEBUG: 'True'
+          ALLOWED_HOSTS: localhost
+          CSRF_TRUSTED_ORIGINS: http://localhost
+          SITE_URL: http://localhost
+          ADMIN_URL: 'admin/'
+          EMAIL_BACKEND: django.core.mail.backends.locmem.EmailBackend

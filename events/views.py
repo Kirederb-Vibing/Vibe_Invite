@@ -175,6 +175,83 @@ def _rsvp_kontekst(event, request):
     }
 
 
+BESKED_MAX_LAENGDE = 1000
+GYLDIGE_GAESTEGRUPPER = frozenset({'ja', 'maaske', 'nej', 'pending'})
+
+
+def _effektiv_status_for_medlem(husstand, medlem):
+    """Husstandens fælles svar overstyrer, undtagen ved individuelle svar."""
+    if husstand.status == 'individuelt':
+        return medlem.status
+    if husstand.status == 'ja':
+        return 'ja'
+    return husstand.status
+
+
+def _gaester_efter_status(event, statusser):
+    """Unikke gæster med email, hvis effektive RSVP-status er i `statusser`.
+
+    Returnerer dicts med email, navn, token og husstand_navn (None for solo).
+    """
+    statusser = set(statusser)
+    sete_emails = set()
+    resultat = []
+
+    def _tilfoej(email, navn, token, husstand_navn=None):
+        noegle = (email or '').strip().lower()
+        if not noegle or noegle in sete_emails:
+            return
+        sete_emails.add(noegle)
+        resultat.append({
+            'email': email.strip(),
+            'navn': navn,
+            'token': token,
+            'husstand_navn': husstand_navn,
+        })
+
+    for inv in event.invitation_set.all():
+        if inv.status in statusser:
+            _tilfoej(inv.email, inv.navn, inv.token)
+
+    for husstand in event.husstande.prefetch_related('medlemmer'):
+        medlemmer = list(husstand.medlemmer.all())
+        er_solo = len(medlemmer) == 1
+        husstand_navn = None if er_solo else husstand.navn
+        for medlem in medlemmer:
+            if _effektiv_status_for_medlem(husstand, medlem) not in statusser:
+                continue
+            _tilfoej(medlem.email, medlem.navn, husstand.token, husstand_navn)
+
+    return resultat
+
+
+def _send_arrangor_mail_til_gaester(request, event, gaester, subject, template_prefix, extra_context=None):
+    """Send samme type mail til en liste af gæster, med personligt RSVP-link."""
+    ics_content = _generer_ics(event)
+    attachment = (f'{event.slug}.ics', ics_content, 'text/calendar')
+    links = _rsvp_kontekst(event, request)
+    sendt = 0
+    for gaest in gaester:
+        context = {
+            'navn': gaest['navn'],
+            'event': event,
+            'rsvp_url': request.build_absolute_uri(f"/rsvp/{gaest['token']}/"),
+            'husstand_navn': gaest['husstand_navn'],
+            **links,
+        }
+        if extra_context:
+            context.update(extra_context)
+        _send_html_mail(
+            subject=subject,
+            to=gaest['email'],
+            template_prefix=template_prefix,
+            context=context,
+            attachment=attachment,
+        )
+        sendt += 1
+    return sendt
+
+
 def _andre_deltagere(event, ekskluder_email=None):
     """Returnerer liste af navne på bekræftede deltagere (max 20)."""
     navne = list(event.invitation_set.filter(status='ja').exclude(
@@ -1253,6 +1330,76 @@ def gensend_invitation_husstand(request, slug, token):
         messages.success(request, _('Invitation gensendt til %(navn)s (%(n)d email).') % {'navn': husstand.navn, 'n': sendt})
     else:
         messages.warning(request, _('Ingen medlemmer af %(navn)s har en email-adresse.') % {'navn': husstand.navn})
+    return redirect('event_overblik', slug=slug)
+
+
+@login_required
+def event_send_besked(request, slug):
+    """Send en kort besked fra arrangøren til valgte RSVP-grupper."""
+    if request.method != 'POST':
+        return HttpResponseForbidden()
+    event = get_object_or_404(Event, slug=slug)
+    if not event.kan_ses_af(request.user):
+        return HttpResponseForbidden('Du har ikke adgang til dette event.')
+    if event.aflyst:
+        messages.warning(request, _('Eventet er aflyst – der sendes ikke beskeder.'))
+        return redirect('event_overblik', slug=slug)
+
+    besked = request.POST.get('besked', '').strip()
+    if not besked:
+        messages.error(request, _('Skriv en besked, der skal sendes.'))
+        return redirect('event_overblik', slug=slug)
+    if len(besked) > BESKED_MAX_LAENGDE:
+        messages.error(request, _('Beskeden er for lang (maks. %(n)d tegn).') % {'n': BESKED_MAX_LAENGDE})
+        return redirect('event_overblik', slug=slug)
+
+    grupper = set(request.POST.getlist('grupper')) & GYLDIGE_GAESTEGRUPPER
+    if not grupper:
+        messages.error(request, _('Vælg mindst én gruppe at sende til.'))
+        return redirect('event_overblik', slug=slug)
+
+    gaester = _gaester_efter_status(event, grupper)
+    if not gaester:
+        messages.warning(request, _('Ingen gæster med email i de valgte grupper.'))
+        return redirect('event_overblik', slug=slug)
+
+    sendt = _send_arrangor_mail_til_gaester(
+        request,
+        event,
+        gaester,
+        subject=_('Besked fra arrangørerne: %(titel)s') % {'titel': event.titel},
+        template_prefix='arrangor_besked',
+        extra_context={'arrangor_besked': besked},
+    )
+    messages.success(request, _('Beskeden er sendt til %(n)d gæst(er).') % {'n': sendt})
+    return redirect('event_overblik', slug=slug)
+
+
+@login_required
+def event_send_info(request, slug):
+    """Send fast praktisk-info-mail til gæster der deltager eller har svaret måske."""
+    if request.method != 'POST':
+        return HttpResponseForbidden()
+    event = get_object_or_404(Event, slug=slug)
+    if not event.kan_ses_af(request.user):
+        return HttpResponseForbidden('Du har ikke adgang til dette event.')
+    if event.aflyst:
+        messages.warning(request, _('Eventet er aflyst – der sendes ikke beskeder.'))
+        return redirect('event_overblik', slug=slug)
+
+    gaester = _gaester_efter_status(event, {'ja', 'maaske'})
+    if not gaester:
+        messages.warning(request, _('Ingen deltagere eller måske-gæster med email.'))
+        return redirect('event_overblik', slug=slug)
+
+    sendt = _send_arrangor_mail_til_gaester(
+        request,
+        event,
+        gaester,
+        subject=_('Praktisk info: %(titel)s') % {'titel': event.titel},
+        template_prefix='arrangor_info',
+    )
+    messages.success(request, _('Info er sendt til %(n)d gæst(er).') % {'n': sendt})
     return redirect('event_overblik', slug=slug)
 
 

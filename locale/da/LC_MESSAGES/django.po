@@ -1220,3 +1220,108 @@ msgstr ""
 msgid "Ønskeliste-link (valgfrit)"
 msgstr ""
 
+msgid "Arrangørerne har sendt dig en besked."
+msgstr ""
+
+msgid "Besked"
+msgstr ""
+
+msgid "Besked fra arrangørerne"
+msgstr ""
+
+msgid "Besked fra arrangørerne: %(titel)s"
+msgstr ""
+
+msgid "Beskeden er for lang (maks. %(n)d tegn)."
+msgstr ""
+
+msgid "Beskeden er sendt til %(n)d gæst(er)."
+msgstr ""
+
+msgid "Der sendes en mail med sted, kort, ønskeliste og RSVP-link til alle der har svaret Deltager eller Måske."
+msgstr ""
+
+msgid "Du modtager denne besked som del af husstanden \"%(husstand)s\"."
+msgstr ""
+
+msgid "Eventet er aflyst – der sendes ikke beskeder."
+msgstr ""
+
+msgid "F.eks. 'Parkering er i gården – ring på porttelefonen.'"
+msgstr ""
+
+msgid "Gå til din RSVP-side"
+msgstr ""
+
+msgid "Gå til din RSVP-side:"
+msgstr ""
+
+msgid "Her er de praktiske oplysninger til arrangementet."
+msgstr ""
+
+msgid "Hvem skal have beskeden?"
+msgstr ""
+
+msgid "Info er sendt til %(n)d gæst(er)."
+msgstr ""
+
+msgid "Ingen deltagere eller måske-gæster med email."
+msgstr ""
+
+msgid "Ingen gæster med email i de valgte grupper."
+msgstr ""
+
+msgid "Intet svar"
+msgstr ""
+
+msgid "Kalender"
+msgstr ""
+
+msgid "Maks. 1000 tegn. Vises i feltet 'Besked fra arrangørerne'."
+msgstr ""
+
+msgid "Modtagere og indhold kan ikke ændres."
+msgstr ""
+
+msgid "Placering"
+msgstr ""
+
+msgid "Placering:"
+msgstr ""
+
+msgid "Praktisk info"
+msgstr ""
+
+msgid "Praktisk info: %(titel)s"
+msgstr ""
+
+msgid "Send besked"
+msgstr ""
+
+msgid "Send info"
+msgstr ""
+
+msgid "Send info til deltagere"
+msgstr ""
+
+msgid "Se på kort:"
+msgstr ""
+
+msgid "Skriv en besked, der skal sendes."
+msgstr ""
+
+msgid "Skriv en kort besked, der sendes som mail. Vælg hvem der skal have den."
+msgstr ""
+
+msgid "Tilføj til kalender:"
+msgstr ""
+
+msgid "Vælg mindst én gruppe at sende til."
+msgstr ""
+
+msgid "Åbn ønskeliste"
+msgstr ""
+
+msgid "Ønskeliste:"
+msgstr ""
+

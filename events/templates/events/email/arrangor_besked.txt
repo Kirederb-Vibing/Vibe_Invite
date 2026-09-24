@@ -1,0 +1,20 @@
+{% load i18n %}{% blocktrans with navn=navn %}Hej {{ navn }},{% endblocktrans %}
+{% if husstand_navn %}
+{% blocktrans with husstand=husstand_navn %}Du modtager denne besked som del af husstanden "{{ husstand }}".{% endblocktrans %}
+{% endif %}
+{% trans "Arrangørerne har sendt dig en besked." %}
+
+{% trans "Besked fra arrangørerne" %}
+{{ arrangor_besked }}
+
+📅 {{ event.dato|date:"j. F Y, kl. H:i" }}
+📍 {{ event.sted }}
+{% if event.sidste_svardag %}⏰ {% trans "Svarfrist:" %} {{ event.sidste_svardag|date:"j. F Y, kl. H:i" }}{% endif %}
+
+{% trans "Gå til din RSVP-side:" %}
+{{ rsvp_url }}
+
+{% if event.beskrivelse %}{{ event.beskrivelse }}
+
+{% endif %}{% trans "Med venlig hilsen" %}
+{{ event.oprettet_af.get_full_name|default:event.oprettet_af.username }}
